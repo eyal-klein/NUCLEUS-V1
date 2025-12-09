@@ -61,6 +61,7 @@ jobs:
             --allow-unauthenticated \
             --set-env-vars="PROJECT_ID=${{ env.PROJECT_ID }}" \
             --set-secrets="DATABASE_URL=nucleus-db-url:latest" \
+            --add-cloudsql-instances=thrive-system1:europe-west1:nucleus-prototype-db \
             --cpu=1 \
             --memory=512Mi \
             --min-instances=0 \
