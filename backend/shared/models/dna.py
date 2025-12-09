@@ -27,6 +27,7 @@ class Entity(Base):
     goals = relationship("Goal", back_populates="entity", cascade="all, delete-orphan")
     values = relationship("Value", back_populates="entity", cascade="all, delete-orphan")
     raw_data = relationship("RawData", back_populates="entity", cascade="all, delete-orphan")
+    integrations = relationship("EntityIntegration", back_populates="entity", cascade="all, delete-orphan")
 
 
 class Interest(Base):

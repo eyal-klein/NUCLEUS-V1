@@ -17,6 +17,9 @@ sys.path.append("/app/backend")
 from shared.models import get_db, Entity
 from shared.pubsub import get_pubsub_client
 
+# Import routers
+from routers import integrations
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -27,6 +30,9 @@ app = FastAPI(
     description="Central coordinator for all NUCLEUS operations",
     version="1.0.0"
 )
+
+# Include routers
+app.include_router(integrations.router)
 
 # Initialize Pub/Sub client
 project_id = os.getenv("PROJECT_ID", "thrive-system1")

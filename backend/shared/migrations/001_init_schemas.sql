@@ -198,6 +198,21 @@ CREATE INDEX IF NOT EXISTS idx_conversations_entity_id ON memory.conversations(e
 CREATE INDEX IF NOT EXISTS idx_conversations_session_id ON memory.conversations(session_id);
 
 -- ============================================================================
+-- MIGRATIONS TRACKING TABLE
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS public.migrations (
+    version VARCHAR(10) PRIMARY KEY,
+    description TEXT,
+    executed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Record this migration
+INSERT INTO public.migrations (version, description, executed_at)
+VALUES ('001', 'Initialize core schemas (dna, memory, assembly, execution)', CURRENT_TIMESTAMP)
+ON CONFLICT (version) DO NOTHING;
+
+-- ============================================================================
 -- SEED DATA: Create default entity
 -- ============================================================================
 

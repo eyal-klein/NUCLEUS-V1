@@ -5,6 +5,7 @@ from .dna import Entity, Interest, Goal, Value, RawData
 from .memory import Conversation, Summary, Embedding
 from .assembly import Agent, Tool, AgentTool, AgentPerformance
 from .execution import Task, Job, Log
+from .integrations import EntityIntegration
 
 __all__ = [
     # Base
@@ -32,4 +33,6 @@ __all__ = [
     "Task",
     "Job",
     "Log",
+    # Integrations
+    "EntityIntegration",
 ]

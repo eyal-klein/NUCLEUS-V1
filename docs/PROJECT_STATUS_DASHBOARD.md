@@ -65,13 +65,13 @@ Sprint Progress: 4/6 (67% Complete)
 ### Schemas (4/4 Complete) ✅
 
 | Schema | Tables | Status | Purpose |
-|--------|--------|--------|---------|
-| **DNA** | 4 | ✅ Complete | User profiles, DNA data, insights |
+|--------|--------|--------|---------
+| **DNA** | 5 | ✅ Complete | User profiles, DNA data, insights, integrations |
 | **Memory** | 4 | ✅ Complete | Short/medium/deep memory, vectors |
 | **Assembly** | 4 | ✅ Complete | Agents, tools, associations |
 | **Execution** | 3 | ✅ Complete | Tasks, results, decisions |
 
-**Total Tables:** 15/15 ✅
+**Total Tables:** 16/16 ✅
 
 ---
 
@@ -220,7 +220,7 @@ Execute → Analyze → Evaluate (QA) → Evolve → Execute
 - **Total Services:** 5
 - **Total Jobs:** 8
 - **Total Engines:** 8
-- **Total Database Tables:** 15
+- **Total Database Tables:** 16
 - **Total CI/CD Workflows:** 14
 - **Lines of Code:** ~15,000+
 
