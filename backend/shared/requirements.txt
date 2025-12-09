@@ -1,33 +1,33 @@
 # NUCLEUS V1.2 - Shared Libraries Requirements
-# Updated to latest stable versions - December 2025
+# Compatible versions tested - December 2025
 
 # Core Web Framework
-fastapi==0.115.5
-uvicorn[standard]==0.32.1
-pydantic==2.10.3
-pydantic-settings==2.6.1
+fastapi>=0.100.0
+uvicorn[standard]>=0.23.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
 
 # Database & ORM
-sqlalchemy==2.0.36
-psycopg2-binary==2.9.10
-pgvector==0.3.6
-alembic==1.14.0
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+pgvector>=0.2.0
+alembic>=1.12.0
 
 # Google Cloud Platform
-google-cloud-pubsub==2.26.1
-cloud-sql-python-connector[pg8000]==1.13.0
-google-cloud-secret-manager==2.21.1
-google-cloud-storage==2.19.0
+google-cloud-pubsub>=2.18.0
+cloud-sql-python-connector[pg8000]>=1.7.0
+google-cloud-secret-manager>=2.16.0
+google-cloud-storage>=2.10.0
 
 # LLM & AI Frameworks
-langchain==0.3.12
-langchain-community==0.3.12
-langchain-google-genai==2.0.6
-litellm==1.53.4
-openai==1.57.2
-google-generativeai==0.8.3
+langchain>=0.1.0
+langchain-community>=0.0.20
+langchain-google-genai>=1.0.0
+litellm>=1.40.0
+openai>=1.0.0
+google-generativeai>=0.3.0
 
 # Utilities
-python-dotenv==1.0.1
-httpx==0.28.1
-tenacity==9.0.0
+python-dotenv>=1.0.0
+httpx>=0.24.0
+tenacity>=8.2.0
