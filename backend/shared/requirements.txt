@@ -19,7 +19,6 @@ google-cloud-secret-manager==2.20.2
 google-cloud-storage==2.18.2
 
 # LLM & AI
-google-adk==1.19.0
 langchain==0.3.0
 langchain-community==0.3.0
 langchain-google-genai==2.0.0
