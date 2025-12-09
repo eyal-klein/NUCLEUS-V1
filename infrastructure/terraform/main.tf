@@ -11,10 +11,9 @@ terraform {
     }
   }
   
-  backend "gcs" {
-    bucket = "nucleus-terraform-state"
-    prefix = "terraform/state"
-  }
+  # Backend configuration removed - using local state for now
+  # To use GCS backend, first create the bucket manually:
+  # gsutil mb gs://nucleus-terraform-state
 }
 
 provider "google" {
