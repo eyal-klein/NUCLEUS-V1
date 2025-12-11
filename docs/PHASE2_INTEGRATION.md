@@ -498,74 +498,60 @@ Need marked fulfilled
 
 ### Phase 2.1: Enhanced Intelligence
 - Machine learning-based health prediction
-- Anomaly detection in agent behavior
-- Automated threshold optimization
-- Cross-agent collaboration analysis
 
-### Phase 2.2: Advanced Lifecycle
-- Gradual shutdown with migration
-- A/B testing for improvements
-- Automatic rollback on degradation
-- Agent versioning and history
+---
 
-### Phase 2.3: Smart Factory
-- Predictive need detection
-- Template-based agent generation
-- Automatic capability discovery
-- Load-based scaling
+## Master Prompt Layer (V2.1)
 
-### Phase 2.4: Ecosystem Optimization
-- Multi-agent coordination
-- Resource optimization
-- Cost-performance balancing
-- Self-healing capabilities
+**Date**: December 11, 2025  
+**Commit**: 6695854
 
-## Troubleshooting
+### Architecture Update
 
-### Common Issues
+The DNA-to-Agent flow has been enhanced with a **Master Prompt layer** to ensure consistency and coherence across all agents.
 
-**Issue**: Health scores not updating
-- Check Health Monitor is running
-- Verify database connectivity
-- Review calculation logic
-- Check for errors in logs
+**New Flow**:
+```
+DNA (19 tables)
+    ↓
+First Interpretation (Strategic)
+    ↓
+Second Interpretation (Tactical)
+    ↓
+[NEW] Master Prompt Engine → Entity.master_prompt
+    ↓
+[UPDATED] Micro-Prompts Engine → Agent.system_prompt (per agent)
+```
 
-**Issue**: Lifecycle Manager not executing
-- Verify Cloud Scheduler is enabled
-- Check job permissions
-- Review execution logs
-- Manually trigger for testing
+### Components
 
-**Issue**: Factory not detecting needs
-- Ensure sufficient data exists
-- Lower confidence threshold
-- Check detection queries
-- Review LLM API status
+1. **Master Prompt Engine** (`/backend/jobs/master-prompt-engine/`)
+   - **Purpose**: Synthesizes the complete DNA profile into a single, comprehensive Master Prompt that defines the core identity of the Entity.
+   - **Input**: All 19 DNA tables + Strategic & Tactical interpretations
+   - **Output**: `Entity.master_prompt` (800-1200 words)
 
-**Issue**: Spawned agents not working
-- Verify agent configuration
-- Check entity linking
-- Review capabilities
-- Test agent manually
+2. **Micro-Prompts Engine** (`/backend/jobs/micro-prompts/`)
+   - **Purpose**: Adapts the Master Prompt for each agent's specific role.
+   - **Input**: `Entity.master_prompt`
+   - **Output**: `Agent.system_prompt` (per agent)
 
-## Support
+### Database Changes
 
-For issues or questions:
-- **Logs**: Use `gcloud logging read` commands above
-- **Database**: Query health, lifecycle, and needs tables
-- **Monitoring**: Check Cloud Monitoring dashboards
-- **Team**: Contact NUCLEUS development team
+**`dna.entity` table**:
+- `master_prompt` (TEXT)
+- `master_prompt_version` (INTEGER)
+- `master_prompt_updated_at` (TIMESTAMP)
 
-## Summary
+### Benefits
 
-Phase 2 "The Living Organism" successfully transforms NUCLEUS into an autonomous, self-evolving system:
+- **Consistency**: All agents share the same foundational identity.
+- **Efficiency**: Update Master Prompt once, propagate to all agents.
+- **Clarity**: Clear separation between Entity identity and Agent role.
+- **Scalability**: Easy to add new agents with consistent behavior.
+- **Evolution**: Master Prompt evolves with DNA, agents stay aligned.
 
-✅ **Agent Health Monitor** - Continuous health tracking
-✅ **Agent Lifecycle Manager** - Automatic lifecycle management
-✅ **Intelligent Agent Factory** - Autonomous agent creation
-✅ **Database Schema** - Complete data model
-✅ **Integration** - All components working together
-✅ **Deployment** - Production-ready on Cloud Run
-✅ **Documentation** - Comprehensive guides
+### Integration
 
-**The system is now alive and can manage itself! 🎉**
+- **Master Prompt Engine** runs after Second Interpretation.
+- **Micro-Prompts Engine** runs after Master Prompt Engine.
+- Both are Cloud Run Jobs deployed via GitHub Actions.
