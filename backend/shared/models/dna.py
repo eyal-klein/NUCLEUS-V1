@@ -122,3 +122,72 @@ class RawData(Base):
     
     # Relationships
     entity = relationship("Entity", back_populates="raw_data")
+
+
+# ============================================================================
+# Phase 3: Health & Wellness DNA
+# ============================================================================
+
+from sqlalchemy import Date
+
+class DailyReadiness(Base):
+    """
+    Daily aggregated health and readiness scores.
+    Calculated from raw health metrics to provide a holistic view of entity's readiness.
+    """
+    __tablename__ = "daily_readiness"
+    __table_args__ = {"schema": "dna"}
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("dna.entity.id", ondelete="CASCADE"), nullable=False)
+    
+    # Date
+    date = Column(Date, nullable=False, index=True)
+    
+    # Composite scores (0-1 scale)
+    readiness_score = Column(Float)
+    sleep_score = Column(Float)
+    hrv_score = Column(Float)
+    activity_score = Column(Float)
+    recovery_score = Column(Float)
+    
+    # Raw metrics
+    sleep_hours = Column(Float)
+    hrv_avg = Column(Integer)
+    resting_heart_rate = Column(Integer)
+    steps = Column(Integer)
+    calories_burned = Column(Integer)
+    
+    # Recommendations
+    recommendations = Column(JSONB, default=[])
+    
+    # Metadata
+    calculated_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    meta_data = Column(JSONB, default={})
+
+
+class EnergyPattern(Base):
+    """
+    Analysis of entity energy levels by time of day and day of week.
+    Used for optimal scheduling and activity planning.
+    """
+    __tablename__ = "energy_patterns"
+    __table_args__ = {"schema": "dna"}
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("dna.entity.id", ondelete="CASCADE"), nullable=False)
+    
+    # Time pattern
+    hour_of_day = Column(Integer, nullable=False)  # 0-23
+    day_of_week = Column(Integer)  # 0-6, NULL for all days
+    
+    # Energy metrics
+    avg_energy_level = Column(Float, nullable=False)  # 0-1
+    sample_count = Column(Integer, default=1)
+    
+    # Optimal activities
+    optimal_for = Column(String(50))  # deep_work, meetings, creative, etc.
+    
+    # Metadata
+    last_updated = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    meta_data = Column(JSONB, default={})

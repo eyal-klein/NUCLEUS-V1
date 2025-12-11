@@ -134,3 +134,35 @@ class MemoryTier4(Base):
     record_count = Column(Integer, nullable=False, comment="Number of interactions in this archive")
     file_size_bytes = Column(Integer, nullable=True)
     archived_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+
+
+# ============================================================================
+# Phase 3: Health & Wellness Data
+# ============================================================================
+
+class HealthMetric(Base):
+    """
+    Raw health and wellness data from IOT devices.
+    Stores individual measurements from devices like Oura Ring, Apple Watch, etc.
+    """
+    __tablename__ = "health_metrics"
+    __table_args__ = {"schema": "memory"}
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("dna.entity.id", ondelete="CASCADE"), nullable=False)
+    
+    # Metric details
+    metric_type = Column(String(50), nullable=False)  # sleep_score, hrv, heart_rate, steps
+    value = Column(Float, nullable=False)
+    unit = Column(String(20))  # bpm, steps, hours
+    
+    # Source tracking
+    source = Column(String(50), nullable=False)  # oura, apple_health, garmin
+    source_id = Column(String(255))  # External ID
+    
+    # Temporal
+    recorded_at = Column(TIMESTAMP(timezone=True), nullable=False, index=True)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    
+    # Metadata
+    meta_data = Column(JSONB, default={})
