@@ -13,6 +13,7 @@ import logging
 
 from backend.shared.models import EntityIntegration, get_db
 from backend.shared.utils.credentials_manager import CredentialsManager
+from backend.shared.memory_logger import get_memory_logger
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/integrations", tags=["integrations"])
@@ -119,6 +120,18 @@ async def create_integration(
         db.refresh(db_integration)
         
         logger.info(f"Created integration {db_integration.id} for entity {integration.entity_id}")
+        
+        # Log to Memory Engine
+        memory_logger = get_memory_logger()
+        await memory_logger.log(
+            entity_id=integration.entity_id,
+            interaction_type="integration_created",
+            interaction_data={
+                "integration_id": str(db_integration.id),
+                "service_name": integration.service_name,
+                "service_type": integration.service_type
+            }
+        )
         
         return db_integration.to_dict()
         
@@ -246,6 +259,22 @@ async def update_integration(
         
         logger.info(f"Updated integration {integration_id}")
         
+        # Log to Memory Engine
+        memory_logger = get_memory_logger()
+        await memory_logger.log(
+            entity_id=integration.entity_id,
+            interaction_type="integration_updated",
+            interaction_data={
+                "integration_id": str(integration_id),
+                "service_name": integration.service_name,
+                "updated_fields": {
+                    "display_name": update.display_name,
+                    "status": update.status,
+                    "credentials_updated": update.credentials is not None
+                }
+            }
+        )
+        
         return integration.to_dict()
         
     except HTTPException:
@@ -286,10 +315,24 @@ async def delete_integration(
         )
         
         # Delete database record
+        entity_id = integration.entity_id
+        service_name = integration.service_name
+        
         db.delete(integration)
         db.commit()
         
         logger.info(f"Deleted integration {integration_id}")
+        
+        # Log to Memory Engine
+        memory_logger = get_memory_logger()
+        await memory_logger.log(
+            entity_id=entity_id,
+            interaction_type="integration_deleted",
+            interaction_data={
+                "integration_id": str(integration_id),
+                "service_name": service_name
+            }
+        )
         
     except HTTPException:
         raise
@@ -326,6 +369,18 @@ async def test_integration(
         is_valid = creds_manager.test_credentials(
             entity_id=integration.entity_id,
             service_name=integration.service_name
+        )
+        
+        # Log to Memory Engine
+        memory_logger = get_memory_logger()
+        await memory_logger.log(
+            entity_id=integration.entity_id,
+            interaction_type="integration_tested",
+            interaction_data={
+                "integration_id": str(integration_id),
+                "service_name": integration.service_name,
+                "is_valid": is_valid
+            }
         )
         
         return {
@@ -384,6 +439,18 @@ async def trigger_sync(
         db.commit()
         
         logger.info(f"Triggered sync for integration {integration_id}")
+        
+        # Log to Memory Engine
+        memory_logger = get_memory_logger()
+        await memory_logger.log(
+            entity_id=integration.entity_id,
+            interaction_type="integration_synced",
+            interaction_data={
+                "integration_id": str(integration_id),
+                "service_name": integration.service_name,
+                "sync_status": integration.last_sync_status
+            }
+        )
         
         return {
             "integration_id": str(integration_id),

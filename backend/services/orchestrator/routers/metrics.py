@@ -14,6 +14,7 @@ import sys
 sys.path.append("/app/backend")
 
 from shared.models import get_db, Entity
+from shared.memory_logger import get_memory_logger
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,18 @@ async def get_entity_metrics(
     
     if not entity:
         raise HTTPException(status_code=404, detail="Entity not found")
+    
+    # Log metrics retrieval to Memory Engine
+    memory_logger = get_memory_logger()
+    await memory_logger.log(
+        entity_id=entity_id,
+        interaction_type="metrics_retrieval",
+        interaction_data={
+            "ttv_weeks": entity.ttv_weeks,
+            "precision_at_3": entity.precision_at_3,
+            "coherence_percent": entity.coherence_percent
+        }
+    )
     
     return {
         "entity_id": str(entity.id),

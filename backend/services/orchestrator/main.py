@@ -16,6 +16,7 @@ sys.path.append("/app/backend")
 
 from shared.models import get_db, Entity
 from shared.pubsub import get_pubsub_client
+from shared.memory_logger import get_memory_logger
 
 # Import routers
 from .routers import integrations, metrics
@@ -38,6 +39,9 @@ app.include_router(metrics.router)
 # Initialize Pub/Sub client
 project_id = os.getenv("PROJECT_ID", "thrive-system1")
 pubsub = get_pubsub_client(project_id)
+
+# Initialize Memory Logger
+memory_logger = get_memory_logger()
 
 
 # Pydantic models
@@ -80,6 +84,16 @@ async def orchestrate(
     if not entity:
         raise HTTPException(status_code=404, detail="Entity not found")
     
+    # Log to Memory Engine
+    await memory_logger.log(
+        entity_id=request.entity_id,
+        interaction_type="orchestration",
+        interaction_data={
+            "operation": request.operation,
+            "payload": request.payload or {}
+        }
+    )
+    
     # Publish orchestration event to Pub/Sub
     await pubsub.publish(
         topic_name="orchestration-events",
@@ -110,6 +124,7 @@ async def shutdown_event():
     """Cleanup on shutdown"""
     logger.info("Orchestrator service shutting down...")
     await pubsub.close()
+    await memory_logger.close()
 
 
 if __name__ == "__main__":
