@@ -11,9 +11,6 @@ from typing import List, Dict, Any, Optional
 from uuid import uuid4
 import json
 
-# Add shared to path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../shared'))
-
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -21,8 +18,8 @@ from sqlalchemy import create_engine, select, and_, or_, func, text
 from sqlalchemy.orm import sessionmaker, Session
 from openai import OpenAI
 
-from models.assembly import Agent, AgentNeed, AgentLifecycleEvent
-from models.dna import Entity, EntityRelationship
+from backend.shared.models.assembly import Agent, AgentNeed, AgentLifecycleEvent
+from backend.shared.models.dna import Entity, EntityRelationship
 
 # Configure logging
 logging.basicConfig(

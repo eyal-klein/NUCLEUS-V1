@@ -1,6 +1,7 @@
-# Intelligent Agent Factory Service Dockerfile
+# NUCLEUS V2.0 - Intelligent Agent Factory Service
 FROM python:3.11-slim
 
+# Set working directory
 WORKDIR /app
 
 # Install system dependencies
@@ -9,26 +10,21 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy shared models and dependencies
-COPY backend/shared /app/shared
+# Copy shared requirements
+COPY backend/shared/requirements.txt /app/backend/shared/requirements.txt
+RUN pip install --no-cache-dir -r /app/backend/shared/requirements.txt
 
-# Copy service files
-COPY backend/services/intelligent-agent-factory /app/service
+# Copy shared code
+COPY backend/shared /app/backend/shared
 
-# Install Python dependencies
-RUN pip install --no-cache-dir \
-    fastapi==0.104.1 \
-    uvicorn[standard]==0.24.0 \
-    sqlalchemy==2.0.23 \
-    psycopg2-binary==2.9.9 \
-    openai==1.54.3 \
-    pydantic==2.5.2
+# Copy service code
+COPY backend/services/intelligent-agent-factory /app/backend/services/intelligent-agent-factory
 
-# Set working directory to service
-WORKDIR /app/service
+# Set Python path
+ENV PYTHONPATH=/app
 
 # Expose port
 EXPOSE 8080
 
-# Run the service
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
+# Run service
+CMD ["python", "-m", "uvicorn", "backend.services.intelligent-agent-factory.main:app", "--host", "0.0.0.0", "--port", "8080"]
