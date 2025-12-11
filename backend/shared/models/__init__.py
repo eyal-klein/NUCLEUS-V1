@@ -8,7 +8,7 @@ from .dna_extended import (
     Emotion, Routine, Context, EvolutionHistory
 )
 from .memory import Conversation, Summary, Embedding, MemoryTier1, MemoryTier2, MemoryTier3, MemoryTier4
-from .assembly import Agent, Tool, AgentTool, AgentPerformance
+from .assembly import Agent, Tool, AgentTool, AgentPerformance, AgentNeed, AgentLifecycleEvent
 from .execution import Task, Job, Log
 from .integrations import EntityIntegration
 
@@ -53,6 +53,8 @@ __all__ = [
     "Tool",
     "AgentTool",
     "AgentPerformance",
+    "AgentNeed",
+    "AgentLifecycleEvent",
     # Execution
     "Task",
     "Job",

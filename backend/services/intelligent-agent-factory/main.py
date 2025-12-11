@@ -18,8 +18,11 @@ from sqlalchemy import create_engine, select, and_, or_, func, text
 from sqlalchemy.orm import sessionmaker, Session
 from openai import OpenAI
 
-from backend.shared.models.assembly import Agent, AgentNeed, AgentLifecycleEvent
-from backend.shared.models.dna import Entity, EntityRelationship
+# Add backend to path for imports
+import sys
+sys.path.append("/app/backend")
+
+from shared.models import Agent, AgentNeed, AgentLifecycleEvent, Entity
 
 # Configure logging
 logging.basicConfig(
