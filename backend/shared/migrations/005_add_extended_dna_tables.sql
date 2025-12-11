@@ -244,8 +244,8 @@ CREATE INDEX idx_evolution_history_table ON dna.evolution_history(table_name);
 CREATE INDEX idx_evolution_history_run ON dna.evolution_history(distillation_run_id);
 
 -- Record migration
-INSERT INTO public.migrations (migration_name, applied_at)
-VALUES ('005_add_extended_dna_tables', NOW())
-ON CONFLICT (migration_name) DO NOTHING;
+INSERT INTO public.migrations (version, description, executed_at)
+VALUES ('005', 'Add Extended DNA Tables (V2.0)', NOW())
+ON CONFLICT (version) DO NOTHING;
 
 -- Migration complete
