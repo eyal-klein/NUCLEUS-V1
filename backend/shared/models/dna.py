@@ -27,6 +27,11 @@ class Entity(Base):
     precision_at_3 = Column(Float, nullable=True, comment="Percentage of top-3 suggestions rated as highly relevant")
     coherence_percent = Column(Float, nullable=True, comment="Percentage of actions aligned with DNA and principles")
     
+    # Master Prompt (Phase 2 - V2.0)
+    master_prompt = Column(Text, nullable=True, comment="Core identity prompt generated from complete DNA profile")
+    master_prompt_version = Column(Integer, default=1, comment="Version number of master prompt")
+    master_prompt_updated_at = Column(TIMESTAMP(timezone=True), nullable=True, comment="When master prompt was last updated")
+    
     # Relationships - Core DNA
     interests = relationship("Interest", back_populates="entity", cascade="all, delete-orphan")
     goals = relationship("Goal", back_populates="entity", cascade="all, delete-orphan")
