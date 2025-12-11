@@ -2,7 +2,7 @@
 
 from .base import Base, get_db, init_db, engine, SessionLocal
 from .dna import Entity, Interest, Goal, Value, RawData
-from .memory import Conversation, Summary, Embedding
+from .memory import Conversation, Summary, Embedding, MemoryTier1, MemoryTier2, MemoryTier3, MemoryTier4
 from .assembly import Agent, Tool, AgentTool, AgentPerformance
 from .execution import Task, Job, Log
 from .integrations import EntityIntegration
@@ -24,6 +24,10 @@ __all__ = [
     "Conversation",
     "Summary",
     "Embedding",
+    "MemoryTier1",
+    "MemoryTier2",
+    "MemoryTier3",
+    "MemoryTier4",
     # Assembly
     "Agent",
     "Tool",
