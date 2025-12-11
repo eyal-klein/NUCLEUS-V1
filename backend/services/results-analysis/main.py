@@ -15,7 +15,7 @@ import uuid
 import sys
 sys.path.append("/app/backend")
 
-from shared.models import get_db, AgentPerformance, Task
+from shared.models import get_db, AgentPerformance, Task, Entity
 from shared.pubsub import get_pubsub_client
 
 # Configure logging
@@ -98,6 +98,48 @@ async def analyze_performance(
         "status": "analysis_complete",
         "task_id": analysis.task_id,
         "agent_id": analysis.agent_id
+    }
+
+
+@app.post("/update-metrics/{entity_id}")
+async def update_entity_metrics(
+    entity_id: str,
+    db: Session = Depends(get_db)
+):
+    """
+    Calculate and update success metrics for an entity.
+    This is a placeholder implementation - real calculation logic will be added later.
+    """
+    logger.info(f"Updating metrics for entity: {entity_id}")
+    
+    # Get entity
+    entity = db.query(Entity).filter(Entity.id == uuid.UUID(entity_id)).first()
+    if not entity:
+        return {"error": "Entity not found"}, 404
+    
+    # TODO: Implement real metric calculation logic
+    # For now, we'll set placeholder values
+    
+    # TTV: Time to value (placeholder: 2 weeks)
+    entity.ttv_weeks = 2.0
+    
+    # Precision@3: Placeholder (85%)
+    entity.precision_at_3 = 85.0
+    
+    # Coherence: Placeholder (92%)
+    entity.coherence_percent = 92.0
+    
+    db.commit()
+    db.refresh(entity)
+    
+    logger.info(f"Metrics updated for entity {entity_id}")
+    
+    return {
+        "status": "metrics_updated",
+        "entity_id": str(entity.id),
+        "ttv_weeks": entity.ttv_weeks,
+        "precision_at_3": entity.precision_at_3,
+        "coherence_percent": entity.coherence_percent
     }
 
 

@@ -22,6 +22,11 @@ class Entity(Base):
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
     
+    # Success Metrics (Phase 1 - V2.0)
+    ttv_weeks = Column(Float, nullable=True, comment="Time To Value in weeks (30% to 50% autonomy)")
+    precision_at_3 = Column(Float, nullable=True, comment="Percentage of top-3 suggestions rated as highly relevant")
+    coherence_percent = Column(Float, nullable=True, comment="Percentage of actions aligned with DNA and principles")
+    
     # Relationships
     interests = relationship("Interest", back_populates="entity", cascade="all, delete-orphan")
     goals = relationship("Goal", back_populates="entity", cascade="all, delete-orphan")

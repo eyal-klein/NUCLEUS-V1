@@ -18,7 +18,7 @@ from shared.models import get_db, Entity
 from shared.pubsub import get_pubsub_client
 
 # Import routers
-from .routers import integrations
+from .routers import integrations, metrics
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -33,6 +33,7 @@ app = FastAPI(
 
 # Include routers
 app.include_router(integrations.router)
+app.include_router(metrics.router)
 
 # Initialize Pub/Sub client
 project_id = os.getenv("PROJECT_ID", "thrive-system1")
