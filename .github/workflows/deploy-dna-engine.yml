@@ -58,7 +58,7 @@ jobs:
             --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }} \
             --region=${{ env.REGION }} \
             --set-env-vars="PROJECT_ID=${{ env.PROJECT_ID }}" \
-            --set-secrets="DATABASE_URL=nucleus-db-url:latest" \
+            --set-secrets="DATABASE_URL=nucleus-db-url:latest,OPENAI_API_KEY=openai-api-key:latest" \
             --cpu=1 \
             --memory=1Gi \
             --max-retries=3 \
@@ -69,7 +69,7 @@ jobs:
             --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }} \
             --region=${{ env.REGION }} \
             --set-env-vars="PROJECT_ID=${{ env.PROJECT_ID }}" \
-            --set-secrets="DATABASE_URL=nucleus-db-url:latest" \
+            --set-secrets="DATABASE_URL=nucleus-db-url:latest,OPENAI_API_KEY=openai-api-key:latest" \
             --cpu=1 \
             --memory=1Gi \
             --max-retries=3 \

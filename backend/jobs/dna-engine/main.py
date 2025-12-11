@@ -1,22 +1,30 @@
 """
-NUCLEUS V1.2 - DNA Engine (Cloud Run Job)
-Analyzes entity data to extract and refine DNA (interests, goals, values)
+NUCLEUS V2.0 - DNA Engine Job
+Scheduled job that distills Memory into DNA profiles
+
+Runs nightly to analyze entity interactions and update DNA tables.
 """
 
-import asyncio
-import logging
 import os
 import sys
-from datetime import datetime
-from typing import List, Dict, Any
+import logging
 import uuid
+from datetime import datetime, timedelta
+from typing import List, Dict, Any, Optional
+import json
 
-# Add backend to path
+# Add backend to path for imports
 sys.path.append("/app/backend")
 
-from shared.models import get_db, Entity, Interest, Goal, Value, RawData, Conversation
-from shared.llm import get_llm_gateway
-from shared.pubsub import get_pubsub_client
+from sqlalchemy.orm import Session
+from openai import OpenAI
+
+from shared.models import (
+    get_db, Entity, MemoryTier2, MemoryTier3, MemoryTier4,
+    PersonalityTrait, CommunicationStyle, DecisionPattern, WorkHabit,
+    Relationship, Skill, Preference, Constraint, Belief, Experience,
+    Emotion, Routine, Context, EvolutionHistory
+)
 
 # Configure logging
 logging.basicConfig(
@@ -25,238 +33,465 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Initialize OpenAI client (using environment variables)
+client = OpenAI()
 
-class DNAEngine:
+
+class DNADistiller:
     """
-    DNA Engine - Extracts and refines entity DNA from raw data.
+    DNA Distillation Engine
     
-    Process:
-    1. Collect all raw data for entity (conversations, documents, interactions)
-    2. Analyze using LLM to extract interests, goals, values
-    3. Update DNA tables with new/refined information
-    4. Publish DNA updated event
+    Analyzes entity memories and distills insights into DNA profile.
     """
     
-    def __init__(self):
-        self.llm = get_llm_gateway()
-        self.project_id = os.getenv("PROJECT_ID", "thrive-system1")
-        self.pubsub = get_pubsub_client(self.project_id)
+    def __init__(self, db: Session, run_id: uuid.UUID):
+        self.db = db
+        self.run_id = run_id
+        self.model = "gpt-4.1-mini"  # Using available model
         
-    async def analyze_entity(self, entity_id: str) -> Dict[str, Any]:
+    def get_recent_memories(
+        self,
+        entity_id: str,
+        days_back: int = 7
+    ) -> List[Dict[str, Any]]:
         """
-        Analyze an entity's data to extract/update DNA.
+        Fetch recent memories from Tier 2, 3, and 4
         
         Args:
-            entity_id: UUID of the entity to analyze
+            entity_id: UUID of the entity
+            days_back: Number of days to look back
             
         Returns:
-            Analysis results
+            List of memory dictionaries
         """
-        logger.info(f"Starting DNA analysis for entity: {entity_id}")
+        cutoff_date = datetime.utcnow() - timedelta(days=days_back)
+        memories = []
         
-        # Get database session
-        db = next(get_db())
+        # Tier 2: Recent memories (30 days)
+        tier2_memories = self.db.query(MemoryTier2).filter(
+            MemoryTier2.entity_id == entity_id,
+            MemoryTier2.timestamp >= cutoff_date
+        ).order_by(MemoryTier2.timestamp.desc()).limit(100).all()
+        
+        for mem in tier2_memories:
+            memories.append({
+                "tier": 2,
+                "timestamp": mem.timestamp.isoformat(),
+                "interaction_type": mem.interaction_type,
+                "interaction_data": mem.interaction_data,
+                "memory_id": str(mem.id)
+            })
+        
+        # Tier 3: Important memories with embeddings
+        tier3_memories = self.db.query(MemoryTier3).filter(
+            MemoryTier3.entity_id == entity_id,
+            MemoryTier3.timestamp >= cutoff_date
+        ).order_by(MemoryTier3.importance_score.desc()).limit(50).all()
+        
+        for mem in tier3_memories:
+            memories.append({
+                "tier": 3,
+                "timestamp": mem.timestamp.isoformat(),
+                "interaction_type": mem.interaction_type,
+                "interaction_data": mem.interaction_data,
+                "importance_score": mem.importance_score,
+                "memory_id": str(mem.id)
+            })
+        
+        # Tier 4: Long-term archived memories (sample)
+        tier4_memories = self.db.query(MemoryTier4).filter(
+            MemoryTier4.entity_id == entity_id
+        ).order_by(MemoryTier4.access_count.desc()).limit(20).all()
+        
+        for mem in tier4_memories:
+            memories.append({
+                "tier": 4,
+                "timestamp": mem.timestamp.isoformat(),
+                "interaction_type": mem.interaction_type,
+                "summary": mem.summary,
+                "access_count": mem.access_count,
+                "memory_id": str(mem.id)
+            })
+        
+        logger.info(f"Fetched {len(memories)} memories for entity {entity_id}")
+        return memories
+    
+    def analyze_personality_traits(
+        self,
+        entity_id: str,
+        memories: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """
+        Analyze memories to extract personality traits
+        
+        Uses LLM to identify Big Five traits and other personality indicators.
+        """
+        logger.info(f"Analyzing personality traits for entity {entity_id}")
+        
+        # Prepare memory context
+        memory_context = json.dumps(memories[:30], indent=2)  # Limit to avoid token overflow
+        
+        prompt = f"""Analyze the following entity interaction memories and extract personality traits.
+
+Focus on the Big Five personality traits:
+1. Openness to Experience (0.0 to 1.0)
+2. Conscientiousness (0.0 to 1.0)
+3. Extraversion (0.0 to 1.0)
+4. Agreeableness (0.0 to 1.0)
+5. Neuroticism (0.0 to 1.0)
+
+Also identify any other notable personality characteristics.
+
+Memories:
+{memory_context}
+
+Return a JSON object with a "traits" array in this format:
+{{
+  "traits": [
+    {{
+      "trait_name": "Openness",
+      "trait_value": 0.75,
+      "trait_description": "Shows high curiosity and willingness to try new things",
+      "confidence_score": 0.8,
+      "evidence_count": 5
+    }}
+  ]
+}}
+
+Only include traits with confidence_score >= 0.6.
+"""
         
         try:
-            # Get entity
-            entity = db.query(Entity).filter(Entity.id == uuid.UUID(entity_id)).first()
-            if not entity:
-                raise ValueError(f"Entity {entity_id} not found")
-            
-            # Collect raw data
-            raw_data = self._collect_raw_data(db, entity_id)
-            logger.info(f"Collected {len(raw_data)} raw data items")
-            
-            # Analyze with LLM
-            analysis = await self._analyze_with_llm(entity, raw_data)
-            
-            # Update DNA tables
-            updated = self._update_dna(db, entity_id, analysis)
-            
-            # Publish event
-            await self.pubsub.publish(
-                topic_name="dna-events",
-                message_data={
-                    "event_type": "dna_updated",
-                    "entity_id": entity_id,
-                    "interests_count": len(updated.get("interests", [])),
-                    "goals_count": len(updated.get("goals", [])),
-                    "values_count": len(updated.get("values", []))
-                }
+            response = client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are a psychological analyst specializing in personality assessment from behavioral data."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                response_format={"type": "json_object"}
             )
             
-            logger.info(f"DNA analysis complete for entity: {entity_id}")
+            result = json.loads(response.choices[0].message.content)
+            traits = result.get("traits", [])
             
-            return {
-                "status": "success",
-                "entity_id": entity_id,
-                "updated": updated
-            }
+            logger.info(f"Extracted {len(traits)} personality traits")
+            return traits
             
         except Exception as e:
-            logger.error(f"DNA analysis failed: {e}")
-            raise
-        finally:
-            db.close()
+            logger.error(f"Failed to analyze personality traits: {e}")
+            return []
     
-    def _collect_raw_data(self, db, entity_id: str) -> List[Dict[str, Any]]:
-        """Collect all raw data for entity"""
-        raw_data = []
+    def analyze_communication_style(
+        self,
+        entity_id: str,
+        memories: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Analyze communication patterns"""
+        logger.info(f"Analyzing communication style for entity {entity_id}")
         
-        # Get raw data entries
-        raw_entries = db.query(RawData).filter(
-            RawData.entity_id == uuid.UUID(entity_id)
-        ).order_by(RawData.created_at.desc()).limit(100).all()
+        memory_context = json.dumps(memories[:30], indent=2)
         
-        for entry in raw_entries:
-            raw_data.append({
-                "type": "raw_data",
-                "content": entry.raw_content,
-                "source": entry.data_source,
-                "timestamp": entry.created_at.isoformat()
-            })
-        
-        # Get recent conversations
-        conversations = db.query(Conversation).filter(
-            Conversation.entity_id == uuid.UUID(entity_id)
-        ).order_by(Conversation.created_at.desc()).limit(50).all()
-        
-        for conv in conversations:
-            raw_data.append({
-                "type": "conversation",
-                "content": f"User: {conv.user_message}\nAssistant: {conv.assistant_message}",
-                "timestamp": conv.created_at.isoformat()
-            })
-        
-        return raw_data
-    
-    async def _analyze_with_llm(self, entity: Entity, raw_data: List[Dict]) -> Dict[str, Any]:
-        """Analyze raw data with LLM to extract DNA"""
-        
-        # Build analysis prompt
-        data_summary = "\n\n".join([
-            f"[{item['type']}] {item['content'][:500]}"
-            for item in raw_data[:20]  # Limit to avoid token overflow
-        ])
-        
-        prompt = f"""You are analyzing data for an entity named "{entity.entity_name}" to extract their DNA.
+        prompt = f"""Analyze the following entity interaction memories and extract communication style patterns.
 
-DNA consists of:
-1. **Interests**: Topics, domains, activities they care about
-2. **Goals**: Objectives, aspirations, things they want to achieve
-3. **Values**: Principles, beliefs, what matters to them
+Consider:
+- Directness vs. indirectness
+- Formality level
+- Tone (professional, casual, friendly, etc.)
+- Preferred communication channels
+- Response patterns
+- Use of humor, empathy, or technical language
 
-Analyze the following data and extract:
-- New interests (not already known)
-- New goals (not already known)
-- New values (not already known)
+Memories:
+{memory_context}
 
-Current known DNA:
-- Entity: {entity.entity_name}
-- Description: {entity.description or "None"}
-
-Recent data:
-{data_summary}
-
-Respond in JSON format:
+Return a JSON object with a "styles" array:
 {{
-  "interests": [
-    {{"name": "interest name", "description": "why they care", "confidence": 0.0-1.0}}
-  ],
-  "goals": [
-    {{"goal_title": "goal", "description": "details", "priority": 1-10}}
-  ],
-  "values": [
-    {{"value_name": "value", "description": "what it means to them"}}
+  "styles": [
+    {{
+      "style_name": "Direct and Concise",
+      "style_description": "Prefers brief, to-the-point communication",
+      "frequency_score": 0.8,
+      "preferred_channels": ["email", "chat"],
+      "tone_preferences": {{"formality": "professional", "brevity": "high"}}
+    }}
   ]
 }}
 """
         
-        messages = [
-            {"role": "system", "content": "You are a DNA analyst for NUCLEUS. Extract interests, goals, and values from entity data."},
-            {"role": "user", "content": prompt}
-        ]
-        
-        response = await self.llm.complete(messages, temperature=0.3)
-        
-        # Parse JSON response
-        import json
         try:
-            analysis = json.loads(response)
-        except json.JSONDecodeError:
-            logger.warning("LLM response not valid JSON, using empty analysis")
-            analysis = {"interests": [], "goals": [], "values": []}
-        
-        return analysis
+            response = client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are a communication analyst specializing in identifying communication patterns."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                response_format={"type": "json_object"}
+            )
+            
+            result = json.loads(response.choices[0].message.content)
+            styles = result.get("styles", [])
+            
+            logger.info(f"Extracted {len(styles)} communication styles")
+            return styles
+            
+        except Exception as e:
+            logger.error(f"Failed to analyze communication style: {e}")
+            return []
     
-    def _update_dna(self, db, entity_id: str, analysis: Dict) -> Dict[str, Any]:
-        """Update DNA tables with analysis results"""
-        updated = {
-            "interests": [],
-            "goals": [],
-            "values": []
-        }
+    def update_personality_traits(
+        self,
+        entity_id: str,
+        traits: List[Dict[str, Any]],
+        source_memory_ids: List[str]
+    ):
+        """Update or create personality trait records"""
+        for trait_data in traits:
+            # Check if trait already exists
+            existing = self.db.query(PersonalityTrait).filter(
+                PersonalityTrait.entity_id == entity_id,
+                PersonalityTrait.trait_name == trait_data["trait_name"]
+            ).first()
+            
+            if existing:
+                # Update existing trait
+                old_values = {
+                    "trait_value": existing.trait_value,
+                    "confidence_score": existing.confidence_score,
+                    "evidence_count": existing.evidence_count
+                }
+                
+                existing.trait_value = trait_data["trait_value"]
+                existing.trait_description = trait_data.get("trait_description")
+                existing.confidence_score = trait_data["confidence_score"]
+                existing.evidence_count = existing.evidence_count + trait_data.get("evidence_count", 1)
+                existing.last_updated_at = datetime.utcnow()
+                
+                # Log evolution
+                self._log_evolution(
+                    entity_id=entity_id,
+                    table_name="personality_traits",
+                    record_id=existing.id,
+                    change_type="updated",
+                    old_values=old_values,
+                    new_values=trait_data,
+                    confidence_delta=trait_data["confidence_score"] - old_values["confidence_score"],
+                    source_memory_ids=source_memory_ids
+                )
+            else:
+                # Create new trait
+                new_trait = PersonalityTrait(
+                    entity_id=entity_id,
+                    trait_name=trait_data["trait_name"],
+                    trait_value=trait_data["trait_value"],
+                    trait_description=trait_data.get("trait_description"),
+                    confidence_score=trait_data["confidence_score"],
+                    evidence_count=trait_data.get("evidence_count", 1)
+                )
+                self.db.add(new_trait)
+                self.db.flush()
+                
+                # Log evolution
+                self._log_evolution(
+                    entity_id=entity_id,
+                    table_name="personality_traits",
+                    record_id=new_trait.id,
+                    change_type="created",
+                    old_values=None,
+                    new_values=trait_data,
+                    confidence_delta=trait_data["confidence_score"],
+                    source_memory_ids=source_memory_ids
+                )
         
-        # Add interests
-        for interest_data in analysis.get("interests", []):
-            interest = Interest(
-                entity_id=uuid.UUID(entity_id),
-                interest_name=interest_data.get("name"),
-                description=interest_data.get("description"),
-                confidence_score=interest_data.get("confidence", 0.7)
-            )
-            db.add(interest)
-            updated["interests"].append(interest_data.get("name"))
+        self.db.commit()
+        logger.info(f"Updated {len(traits)} personality traits for entity {entity_id}")
+    
+    def update_communication_styles(
+        self,
+        entity_id: str,
+        styles: List[Dict[str, Any]],
+        source_memory_ids: List[str]
+    ):
+        """Update or create communication style records"""
+        for style_data in styles:
+            # Check if style already exists
+            existing = self.db.query(CommunicationStyle).filter(
+                CommunicationStyle.entity_id == entity_id,
+                CommunicationStyle.style_name == style_data["style_name"]
+            ).first()
+            
+            if existing:
+                # Update existing style
+                old_values = {
+                    "frequency_score": existing.frequency_score,
+                    "preferred_channels": existing.preferred_channels
+                }
+                
+                existing.style_description = style_data.get("style_description")
+                existing.frequency_score = style_data["frequency_score"]
+                existing.preferred_channels = style_data.get("preferred_channels", [])
+                existing.tone_preferences = style_data.get("tone_preferences", {})
+                existing.updated_at = datetime.utcnow()
+                
+                # Log evolution
+                self._log_evolution(
+                    entity_id=entity_id,
+                    table_name="communication_styles",
+                    record_id=existing.id,
+                    change_type="updated",
+                    old_values=old_values,
+                    new_values=style_data,
+                    confidence_delta=None,
+                    source_memory_ids=source_memory_ids
+                )
+            else:
+                # Create new style
+                new_style = CommunicationStyle(
+                    entity_id=entity_id,
+                    style_name=style_data["style_name"],
+                    style_description=style_data.get("style_description"),
+                    frequency_score=style_data["frequency_score"],
+                    preferred_channels=style_data.get("preferred_channels", []),
+                    tone_preferences=style_data.get("tone_preferences", {})
+                )
+                self.db.add(new_style)
+                self.db.flush()
+                
+                # Log evolution
+                self._log_evolution(
+                    entity_id=entity_id,
+                    table_name="communication_styles",
+                    record_id=new_style.id,
+                    change_type="created",
+                    old_values=None,
+                    new_values=style_data,
+                    confidence_delta=None,
+                    source_memory_ids=source_memory_ids
+                )
         
-        # Add goals
-        for goal_data in analysis.get("goals", []):
-            goal = Goal(
-                entity_id=uuid.UUID(entity_id),
-                goal_title=goal_data.get("goal_title"),
-                description=goal_data.get("description"),
-                priority=goal_data.get("priority", 5)
-            )
-            db.add(goal)
-            updated["goals"].append(goal_data.get("goal_title"))
+        self.db.commit()
+        logger.info(f"Updated {len(styles)} communication styles for entity {entity_id}")
+    
+    def _log_evolution(
+        self,
+        entity_id: str,
+        table_name: str,
+        record_id: uuid.UUID,
+        change_type: str,
+        old_values: Optional[Dict],
+        new_values: Dict,
+        confidence_delta: Optional[float],
+        source_memory_ids: List[str]
+    ):
+        """Log DNA evolution to history table"""
+        evolution = EvolutionHistory(
+            entity_id=entity_id,
+            table_name=table_name,
+            record_id=record_id,
+            change_type=change_type,
+            old_values=old_values,
+            new_values=new_values,
+            confidence_delta=confidence_delta,
+            source_memory_ids=[uuid.UUID(mid) for mid in source_memory_ids],
+            distillation_run_id=self.run_id
+        )
+        self.db.add(evolution)
+    
+    def distill_entity_dna(self, entity_id: str):
+        """
+        Main distillation process for a single entity
         
-        # Add values
-        for value_data in analysis.get("values", []):
-            value = Value(
-                entity_id=uuid.UUID(entity_id),
-                value_name=value_data.get("value_name"),
-                description=value_data.get("description")
-            )
-            db.add(value)
-            updated["values"].append(value_data.get("value_name"))
+        Steps:
+        1. Fetch recent memories
+        2. Analyze with LLM
+        3. Update DNA tables
+        4. Log evolution
+        """
+        logger.info(f"Starting DNA distillation for entity {entity_id}")
         
-        db.commit()
-        
-        return updated
+        try:
+            # Fetch memories
+            memories = self.get_recent_memories(entity_id, days_back=7)
+            
+            if not memories:
+                logger.warning(f"No memories found for entity {entity_id}")
+                return
+            
+            # Extract memory IDs for tracking
+            memory_ids = [m["memory_id"] for m in memories]
+            
+            # Analyze personality traits
+            personality_traits = self.analyze_personality_traits(entity_id, memories)
+            if personality_traits:
+                self.update_personality_traits(entity_id, personality_traits, memory_ids)
+            
+            # Analyze communication style
+            communication_styles = self.analyze_communication_style(entity_id, memories)
+            if communication_styles:
+                self.update_communication_styles(entity_id, communication_styles, memory_ids)
+            
+            # TODO: Add more analyzers for other DNA tables:
+            # - Decision patterns
+            # - Work habits
+            # - Skills
+            # - Preferences
+            # - Emotions
+            # - Routines
+            # - Contexts
+            # etc.
+            
+            logger.info(f"Completed DNA distillation for entity {entity_id}")
+            
+        except Exception as e:
+            logger.error(f"Failed to distill DNA for entity {entity_id}: {e}")
+            self.db.rollback()
+            raise
 
 
-async def main():
+def main():
     """Main entry point for DNA Engine job"""
-    logger.info("DNA Engine starting...")
+    logger.info("=" * 80)
+    logger.info("NUCLEUS DNA Engine V2.0 - Starting distillation run")
+    logger.info("=" * 80)
     
-    # Get entity_id from environment (passed by Cloud Scheduler or manual trigger)
-    entity_id = os.getenv("ENTITY_ID")
+    # Generate run ID
+    run_id = uuid.uuid4()
+    logger.info(f"Run ID: {run_id}")
     
-    if not entity_id:
-        logger.error("ENTITY_ID environment variable not set")
-        return
-    
-    engine = DNAEngine()
-    await engine.pubsub.initialize()
+    # Get database session
+    db = next(get_db())
     
     try:
-        result = await engine.analyze_entity(entity_id)
-        logger.info(f"DNA Engine completed successfully: {result}")
+        # Get all active entities
+        entities = db.query(Entity).all()
+        logger.info(f"Found {len(entities)} entities to process")
+        
+        # Initialize distiller
+        distiller = DNADistiller(db, run_id)
+        
+        # Process each entity
+        success_count = 0
+        error_count = 0
+        
+        for entity in entities:
+            try:
+                distiller.distill_entity_dna(str(entity.id))
+                success_count += 1
+            except Exception as e:
+                logger.error(f"Failed to process entity {entity.id}: {e}")
+                error_count += 1
+        
+        logger.info("=" * 80)
+        logger.info(f"DNA Engine run complete: {success_count} successful, {error_count} errors")
+        logger.info("=" * 80)
+        
     except Exception as e:
-        logger.error(f"DNA Engine failed: {e}")
+        logger.error(f"Fatal error in DNA Engine: {e}")
         raise
     finally:
-        await engine.pubsub.close()
+        db.close()
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

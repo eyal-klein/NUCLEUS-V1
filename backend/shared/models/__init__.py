@@ -2,6 +2,11 @@
 
 from .base import Base, get_db, init_db, engine, SessionLocal
 from .dna import Entity, Interest, Goal, Value, RawData
+from .dna_extended import (
+    PersonalityTrait, CommunicationStyle, DecisionPattern, WorkHabit,
+    Relationship, Skill, Preference, Constraint, Belief, Experience,
+    Emotion, Routine, Context, EvolutionHistory
+)
 from .memory import Conversation, Summary, Embedding, MemoryTier1, MemoryTier2, MemoryTier3, MemoryTier4
 from .assembly import Agent, Tool, AgentTool, AgentPerformance
 from .execution import Task, Job, Log
@@ -14,12 +19,27 @@ __all__ = [
     "init_db",
     "engine",
     "SessionLocal",
-    # DNA
+    # DNA - Core
     "Entity",
     "Interest",
     "Goal",
     "Value",
     "RawData",
+    # DNA - Extended (V2.0)
+    "PersonalityTrait",
+    "CommunicationStyle",
+    "DecisionPattern",
+    "WorkHabit",
+    "Relationship",
+    "Skill",
+    "Preference",
+    "Constraint",
+    "Belief",
+    "Experience",
+    "Emotion",
+    "Routine",
+    "Context",
+    "EvolutionHistory",
     # Memory
     "Conversation",
     "Summary",

@@ -27,12 +27,28 @@ class Entity(Base):
     precision_at_3 = Column(Float, nullable=True, comment="Percentage of top-3 suggestions rated as highly relevant")
     coherence_percent = Column(Float, nullable=True, comment="Percentage of actions aligned with DNA and principles")
     
-    # Relationships
+    # Relationships - Core DNA
     interests = relationship("Interest", back_populates="entity", cascade="all, delete-orphan")
     goals = relationship("Goal", back_populates="entity", cascade="all, delete-orphan")
     values = relationship("Value", back_populates="entity", cascade="all, delete-orphan")
     raw_data = relationship("RawData", back_populates="entity", cascade="all, delete-orphan")
     integrations = relationship("EntityIntegration", back_populates="entity", cascade="all, delete-orphan")
+    
+    # Relationships - Extended DNA (V2.0)
+    personality_traits = relationship("PersonalityTrait", back_populates="entity", cascade="all, delete-orphan")
+    communication_styles = relationship("CommunicationStyle", back_populates="entity", cascade="all, delete-orphan")
+    decision_patterns = relationship("DecisionPattern", back_populates="entity", cascade="all, delete-orphan")
+    work_habits = relationship("WorkHabit", back_populates="entity", cascade="all, delete-orphan")
+    relationships = relationship("Relationship", back_populates="entity", cascade="all, delete-orphan")
+    skills = relationship("Skill", back_populates="entity", cascade="all, delete-orphan")
+    preferences = relationship("Preference", back_populates="entity", cascade="all, delete-orphan")
+    constraints = relationship("Constraint", back_populates="entity", cascade="all, delete-orphan")
+    beliefs = relationship("Belief", back_populates="entity", cascade="all, delete-orphan")
+    experiences = relationship("Experience", back_populates="entity", cascade="all, delete-orphan")
+    emotions = relationship("Emotion", back_populates="entity", cascade="all, delete-orphan")
+    routines = relationship("Routine", back_populates="entity", cascade="all, delete-orphan")
+    contexts = relationship("Context", back_populates="entity", cascade="all, delete-orphan")
+    evolution_history = relationship("EvolutionHistory", back_populates="entity", cascade="all, delete-orphan")
 
 
 class Interest(Base):
