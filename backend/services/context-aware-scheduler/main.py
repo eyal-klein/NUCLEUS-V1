@@ -30,8 +30,19 @@ logger = logging.getLogger(__name__)
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:pass@localhost/nucleus")
 
 # Database setup
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+engine = None
+SessionLocal = None
+
+def get_db_engine():
+    global engine, SessionLocal
+    if engine is None:
+        try:
+            engine = create_engine(DATABASE_URL)
+            SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+        except Exception as e:
+            logger.warning(f"Failed to connect to database: {e}")
+            return None, None
+    return engine, SessionLocal
 
 # FastAPI app
 app = FastAPI(
