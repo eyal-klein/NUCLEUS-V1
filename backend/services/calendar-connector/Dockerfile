@@ -14,8 +14,8 @@ RUN pip install --no-cache-dir -r /app/backend/services/calendar-connector/requi
 # Set working directory to service
 WORKDIR /app/backend/services/calendar-connector
 
-# Expose port
-EXPOSE 8000
+# Expose port (Cloud Run uses PORT env var)
+EXPOSE 8080
 
-# Run the service
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run the service using python to properly read PORT env var
+CMD ["python", "main.py"]
