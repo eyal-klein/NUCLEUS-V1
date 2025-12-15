@@ -52,7 +52,8 @@ async def publish_event(event_type: str, entity_id: str, data: Dict[str, Any]):
 
 @app.on_event("startup")
 async def startup_event():
-    await connect_nats()
+    logger.info("Apple Watch Connector started")
+    # NATS removed - using Pub/Sub instead
 
 @app.on_event("shutdown")
 async def shutdown_event():

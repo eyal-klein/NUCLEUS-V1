@@ -207,8 +207,9 @@ async def get_linkedin_connections(access_token: str, start: int = 0, count: int
 # API Endpoints
 @app.on_event("startup")
 async def startup_event():
-    """Initialize NATS connection on startup"""
-    await connect_nats()
+    """Initialize service on startup"""
+    logger.info("LinkedIn Connector started")
+    # NATS removed - using Pub/Sub instead
 
 
 @app.on_event("shutdown")
