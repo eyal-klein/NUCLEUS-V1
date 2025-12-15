@@ -25,6 +25,10 @@ from googleapiclient.errors import HttpError
 import sys
 sys.path.append('/app/backend/shared')
 from connectors.base import BaseConnector
+# Pub/Sub client
+from google.cloud import pubsub_v1
+import json
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

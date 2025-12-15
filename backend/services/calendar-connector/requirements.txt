@@ -12,3 +12,5 @@ google-api-python-client==2.108.0
 
 # NATS
 nats-py==2.6.0
+
+google-cloud-pubsub>=2.18.0

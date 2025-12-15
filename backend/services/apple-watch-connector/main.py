@@ -9,16 +9,17 @@ from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import asyncio
-from nats.aio.client import Client as NATS
+# Pub/Sub client
+from google.cloud import pubsub_v1
+import json
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 EVENT_STREAM_URL = os.getenv("EVENT_STREAM_URL", "http://ingestion-event-stream:8000")
-NATS_URL = os.getenv("NATS_URL", "nats://infra-nats:4222")
 
 app = FastAPI(title="Apple Watch Connector", version="1.0.0")
-nats_client = None
 
 class HealthMetric(BaseModel):
     metric_type: str

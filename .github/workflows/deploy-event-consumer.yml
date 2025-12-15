@@ -59,7 +59,7 @@ jobs:
             --region ${{ env.REGION }} \
             --platform managed \
             --allow-unauthenticated \
-            --set-env-vars NATS_URL=nats://infra-nats:4222,MEMORY_ENGINE_URL=https://analysis-memory-xeihvetbja-uc.a.run.app \
+            --set-env-vars 
             --memory 512Mi \
             --cpu 1 \
             --min-instances 1 \

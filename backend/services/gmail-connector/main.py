@@ -15,6 +15,10 @@ from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 import httpx
+# Pub/Sub client
+from google.cloud import pubsub_v1
+import json
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -30,6 +34,10 @@ app = FastAPI(
 # Configuration
 EVENT_STREAM_URL = os.getenv("EVENT_STREAM_URL", "http://event-stream:8080")
 SYNC_INTERVAL_MINUTES = int(os.getenv("SYNC_INTERVAL_MINUTES", "5"))
+# Pub/Sub Configuration
+GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "thrive-system1")
+PUBSUB_TOPIC = os.getenv("PUBSUB_TOPIC", "nucleus-digital-events")
+
 
 
 # Pydantic models
@@ -177,16 +185,23 @@ class GmailConnector:
                 }
             }
             
-            response = await self.http_client.post(
-                f"{EVENT_STREAM_URL}/publish",
-                json=event
-            )
-            
-            if response.status_code == 200:
-                logger.info(f"Published email event: {parsed_message['subject'][:50]}")
+            # Publish to Pub/Sub
+            try:
+                publisher = pubsub_v1.PublisherClient()
+                topic_path = publisher.topic_path(GCP_PROJECT_ID, "nucleus-digital-events")
+                
+                message_data = json.dumps(event).encode("utf-8")
+                future = publisher.publish(
+                    topic_path,
+                    data=message_data,
+                    event_type=event["event_type"],
+                    entity_id=event["entity_id"]
+                )
+                message_id = future.result(timeout=30)
+                logger.info(f"Published to Pub/Sub: {message_id}")
                 return True
-            else:
-                logger.error(f"Failed to publish event: {response.status_code}")
+            except Exception as pub_error:
+                logger.error(f"Failed to publish to Pub/Sub: {pub_error}")
                 return False
                 
         except Exception as e:

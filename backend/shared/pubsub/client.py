@@ -200,3 +200,107 @@ def get_pubsub_client(project_id: Optional[str] = None) -> PubSubClient:
         _pubsub_client = PubSubClient(project_id)
     
     return _pubsub_client
+
+
+
+# ============================================
+# Push Handler Utilities (for Cloud Run)
+# ============================================
+
+import base64
+from pydantic import BaseModel
+from fastapi import Request, HTTPException
+
+
+class PubSubPushMessage(BaseModel):
+    """Pub/Sub push message structure."""
+    messageId: str
+    publishTime: str
+    data: Optional[str] = None
+    attributes: Optional[Dict[str, str]] = None
+
+
+class PubSubPushEnvelope(BaseModel):
+    """Pub/Sub push envelope structure."""
+    message: PubSubPushMessage
+    subscription: str
+
+
+class NucleusEvent(BaseModel):
+    """NUCLEUS event structure."""
+    type: str
+    entity_id: str
+    data: Dict[str, Any]
+    timestamp: str
+    source: str
+    version: str = "1.0"
+
+
+async def parse_push_message(request: Request) -> tuple[NucleusEvent, str]:
+    """
+    Parse a Pub/Sub push message from a FastAPI request.
+    
+    Args:
+        request: FastAPI Request object
+        
+    Returns:
+        Tuple of (NucleusEvent, message_id)
+        
+    Raises:
+        HTTPException: If the message is invalid
+    """
+    try:
+        body = await request.json()
+        envelope = PubSubPushEnvelope(**body)
+        
+        if not envelope.message.data:
+            raise HTTPException(status_code=400, detail="No message data")
+        
+        decoded_data = base64.b64decode(envelope.message.data)
+        event_dict = json.loads(decoded_data)
+        
+        event = NucleusEvent(**event_dict)
+        
+        logger.info(f"Received event: {event.type} for entity {event.entity_id}")
+        return event, envelope.message.messageId
+        
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in message: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid JSON: {e}")
+    except Exception as e:
+        logger.error(f"Failed to parse Pub/Sub message: {e}")
+        raise HTTPException(status_code=400, detail=f"Invalid message: {e}")
+
+
+# Idempotency cache
+_processed_messages: Dict[str, float] = {}
+MAX_CACHE_SIZE = 10000
+
+
+def check_idempotency(message_id: str) -> bool:
+    """
+    Check if a message has already been processed.
+    Returns True if duplicate (should skip), False if new.
+    """
+    import time
+    global _processed_messages
+    
+    now = time.time()
+    
+    # Clean old entries (older than 1 hour)
+    _processed_messages = {
+        k: v for k, v in _processed_messages.items()
+        if now - v < 3600
+    }
+    
+    # Limit cache size
+    if len(_processed_messages) > MAX_CACHE_SIZE:
+        sorted_items = sorted(_processed_messages.items(), key=lambda x: x[1])
+        _processed_messages = dict(sorted_items[MAX_CACHE_SIZE // 2:])
+    
+    if message_id in _processed_messages:
+        logger.info(f"Duplicate message detected: {message_id}")
+        return True
+    
+    _processed_messages[message_id] = now
+    return False

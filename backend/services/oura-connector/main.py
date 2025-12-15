@@ -15,6 +15,10 @@ import sys
 sys.path.append("/app")
 
 from backend.shared.connectors.base import HealthConnector
+# Pub/Sub client
+from google.cloud import pubsub_v1
+import json
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

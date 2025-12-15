@@ -16,7 +16,10 @@ from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
 import httpx
 import asyncio
-from nats.aio.client import Client as NATS
+# Pub/Sub client
+from google.cloud import pubsub_v1
+import json
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -27,7 +30,6 @@ LINKEDIN_CLIENT_ID = os.getenv("LINKEDIN_CLIENT_ID")
 LINKEDIN_CLIENT_SECRET = os.getenv("LINKEDIN_CLIENT_SECRET")
 LINKEDIN_REDIRECT_URI = os.getenv("LINKEDIN_REDIRECT_URI", "http://localhost:8000/callback")
 EVENT_STREAM_URL = os.getenv("EVENT_STREAM_URL", "http://ingestion-event-stream:8000")
-NATS_URL = os.getenv("NATS_URL", "nats://infra-nats:4222")
 
 # LinkedIn API endpoints
 LINKEDIN_AUTH_URL = "https://www.linkedin.com/oauth/v2/authorization"
@@ -45,7 +47,6 @@ app = FastAPI(
 tokens = {}
 
 # NATS client
-nats_client = None
 
 
 # Models
@@ -100,8 +101,7 @@ async def connect_nats():
             logger.info(f"Connected to NATS at {NATS_URL}")
         except Exception as e:
             logger.warning(f"Failed to connect to NATS: {e}. Service will continue without NATS.")
-            nats_client = None
-
+            
 
 async def publish_event(event_type: str, entity_id: str, data: Dict[str, Any]):
     """Publish event to NATS SOCIAL stream"""
