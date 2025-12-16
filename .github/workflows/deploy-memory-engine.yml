@@ -61,7 +61,7 @@ jobs:
             --allow-unauthenticated \
             --set-env-vars PROJECT_ID=${{ env.PROJECT_ID }} \
             --set-env-vars DATABASE_URL=${{ secrets.DATABASE_URL }} \
-            --add-cloudsql-instances ${{ secrets.CLOUD_SQL_INSTANCE }} \
+            ${{ secrets.CLOUD_SQL_INSTANCE && format('--add-cloudsql-instances {0}', secrets.CLOUD_SQL_INSTANCE) || '' }} \
             --memory 512Mi \
             --cpu 1 \
             --timeout 300 \

@@ -191,3 +191,40 @@ class EnergyPattern(Base):
     # Metadata
     last_updated = Column(TIMESTAMP(timezone=True), server_default=func.now())
     meta_data = Column(JSONB, default={})
+
+
+class SchedulingPreferences(Base):
+    """
+    Entity scheduling preferences for optimal calendar management.
+    Used by Context-Aware Scheduler to plan activities.
+    """
+    __tablename__ = "scheduling_preferences"
+    __table_args__ = {"schema": "dna"}
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("dna.entity.id", ondelete="CASCADE"), nullable=False)
+    
+    # Work hours preferences
+    preferred_work_start = Column(Integer, default=9)  # Hour of day (0-23)
+    preferred_work_end = Column(Integer, default=17)  # Hour of day (0-23)
+    
+    # Meeting preferences
+    max_meetings_per_day = Column(Integer, default=5)
+    preferred_meeting_duration = Column(Integer, default=30)  # minutes
+    buffer_between_meetings = Column(Integer, default=15)  # minutes
+    
+    # Focus time preferences
+    preferred_focus_block_duration = Column(Integer, default=90)  # minutes
+    min_focus_blocks_per_day = Column(Integer, default=2)
+    
+    # Break preferences
+    lunch_start_hour = Column(Integer, default=12)
+    lunch_duration = Column(Integer, default=60)  # minutes
+    
+    # Days preferences
+    working_days = Column(JSONB, default=[1, 2, 3, 4, 5])  # 0=Sunday, 6=Saturday
+    
+    # Metadata
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
+    meta_data = Column(JSONB, default={})

@@ -1,7 +1,7 @@
 """NUCLEUS V1.2 - SQLAlchemy Models"""
 
 from .base import Base, get_db, init_db, engine, SessionLocal
-from .dna import Entity, Interest, Goal, Value, RawData, DailyReadiness, EnergyPattern
+from .dna import Entity, Interest, Goal, Value, RawData, DailyReadiness, EnergyPattern, SchedulingPreferences
 from .dna_extended import (
     PersonalityTrait, CommunicationStyle, DecisionPattern, WorkHabit,
     Relationship, Skill, Preference, Constraint, Belief, Experience,
@@ -31,6 +31,7 @@ __all__ = [
     "RawData",
     "DailyReadiness",
     "EnergyPattern",
+    "SchedulingPreferences",
     # DNA - Extended (V2.0)
     "PersonalityTrait",
     "CommunicationStyle",
