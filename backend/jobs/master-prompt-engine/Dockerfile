@@ -6,6 +6,9 @@ WORKDIR /app
 
 # Copy shared requirements and install
 COPY backend/shared/requirements.txt /app/backend/shared/requirements.txt
+# Install system dependencies for pgvector
+RUN apt-get update && apt-get install -y gcc libpq-dev && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir -r /app/backend/shared/requirements.txt
 
 # Copy shared code

@@ -9,6 +9,9 @@ COPY backend/shared /app/backend/shared
 COPY backend/jobs/activation-engine /app/backend/jobs/activation-engine
 
 # Install dependencies
+# Install system dependencies for pgvector
+RUN apt-get update && apt-get install -y gcc libpq-dev && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir -r /app/backend/shared/requirements.txt
 
 # Set environment
