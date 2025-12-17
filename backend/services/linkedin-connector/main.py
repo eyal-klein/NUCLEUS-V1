@@ -2,7 +2,7 @@
 LinkedIn Connector Service
 
 Integrates with LinkedIn API to monitor profile, connections, and activity.
-Publishes events to NATS SOCIAL stream for processing.
+Publishes events to Google Cloud Pub/Sub for processing.
 """
 
 import os
@@ -31,6 +31,10 @@ LINKEDIN_CLIENT_SECRET = os.getenv("LINKEDIN_CLIENT_SECRET")
 LINKEDIN_REDIRECT_URI = os.getenv("LINKEDIN_REDIRECT_URI", "http://localhost:8000/callback")
 EVENT_STREAM_URL = os.getenv("EVENT_STREAM_URL", "http://ingestion-event-stream:8000")
 
+# Pub/Sub Configuration
+GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "nucleus-master")
+PUBSUB_TOPIC = os.getenv("PUBSUB_TOPIC", "nucleus-digital-events")
+
 # LinkedIn API endpoints
 LINKEDIN_AUTH_URL = "https://www.linkedin.com/oauth/v2/authorization"
 LINKEDIN_TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
@@ -40,13 +44,11 @@ LINKEDIN_API_BASE = "https://api.linkedin.com/v2"
 app = FastAPI(
     title="LinkedIn Connector",
     description="LinkedIn API integration for NUCLEUS",
-    version="1.0.0"
+    version="3.0.0"
 )
 
 # In-memory token storage (in production, use database)
 tokens = {}
-
-# NATS client
 
 
 # Models
@@ -55,14 +57,14 @@ class LinkedInProfile(BaseModel):
     linkedin_id: str
     first_name: str
     last_name: str
-    headline: Optional[str]
-    summary: Optional[str]
+    headline: Optional[str] = None
+    summary: Optional[str] = None
     profile_url: str
-    profile_picture_url: Optional[str]
-    current_company: Optional[str]
-    current_title: Optional[str]
-    location: Optional[str]
-    connections_count: Optional[int]
+    profile_picture_url: Optional[str] = None
+    current_company: Optional[str] = None
+    current_title: Optional[str] = None
+    location: Optional[str] = None
+    connections_count: Optional[int] = None
 
 
 class LinkedInConnection(BaseModel):
@@ -70,11 +72,11 @@ class LinkedInConnection(BaseModel):
     connection_linkedin_id: str
     first_name: str
     last_name: str
-    headline: Optional[str]
+    headline: Optional[str] = None
     profile_url: str
-    current_company: Optional[str]
-    current_title: Optional[str]
-    location: Optional[str]
+    current_company: Optional[str] = None
+    current_title: Optional[str] = None
+    location: Optional[str] = None
 
 
 class LinkedInActivity(BaseModel):
@@ -83,32 +85,17 @@ class LinkedInActivity(BaseModel):
     activity_type: str  # post, comment, share, like, job_change
     author_linkedin_id: str
     author_name: str
-    content: Optional[str]
+    content: Optional[str] = None
     posted_at: datetime
     likes_count: int = 0
     comments_count: int = 0
     shares_count: int = 0
 
 
-# NATS Connection
-async def connect_nats():
-    """Connect to NATS server"""
-    global nats_client
-    if nats_client is None:
-        try:
-            nats_client = NATS()
-            await nats_client.connect(NATS_URL)
-            logger.info(f"Connected to NATS at {NATS_URL}")
-        except Exception as e:
-            logger.warning(f"Failed to connect to NATS: {e}. Service will continue without NATS.")
-            
-
+# Pub/Sub Event Publishing
 async def publish_event(event_type: str, entity_id: str, data: Dict[str, Any]):
-    """Publish event to NATS SOCIAL stream"""
+    """Publish event to Google Cloud Pub/Sub"""
     try:
-        if nats_client is None:
-            await connect_nats()
-        
         event = {
             "event_type": event_type,
             "source": "linkedin",
@@ -117,9 +104,32 @@ async def publish_event(event_type: str, entity_id: str, data: Dict[str, Any]):
             "data": data
         }
         
-        # Publish to SOCIAL stream
-        await nats_client.publish("SOCIAL.linkedin", str(event).encode())
-        logger.info(f"Published {event_type} event for entity {entity_id}")
+        # Publish to Pub/Sub
+        try:
+            publisher = pubsub_v1.PublisherClient()
+            topic_path = publisher.topic_path(GCP_PROJECT_ID, PUBSUB_TOPIC)
+            
+            message_data = json.dumps(event).encode("utf-8")
+            future = publisher.publish(
+                topic_path,
+                data=message_data,
+                event_type=event_type,
+                entity_id=entity_id,
+                source="linkedin"
+            )
+            message_id = future.result(timeout=30)
+            logger.info(f"Published {event_type} event for entity {entity_id}, message_id: {message_id}")
+            
+        except Exception as pubsub_error:
+            logger.warning(f"Pub/Sub publish failed, falling back to HTTP: {pubsub_error}")
+            # Fallback to HTTP event stream
+            async with httpx.AsyncClient() as client:
+                await client.post(
+                    f"{EVENT_STREAM_URL}/events",
+                    json=event,
+                    timeout=10.0
+                )
+                logger.info(f"Published {event_type} event via HTTP fallback")
     
     except Exception as e:
         logger.error(f"Error publishing event: {e}")
@@ -208,15 +218,13 @@ async def get_linkedin_connections(access_token: str, start: int = 0, count: int
 @app.on_event("startup")
 async def startup_event():
     """Initialize service on startup"""
-    logger.info("LinkedIn Connector started")
-    # NATS removed - using Pub/Sub instead
+    logger.info("LinkedIn Connector started (using Pub/Sub)")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Close NATS connection on shutdown"""
-    if nats_client:
-        await nats_client.close()
+    """Cleanup on shutdown"""
+    logger.info("LinkedIn Connector shutting down")
 
 
 @app.get("/health")
@@ -225,8 +233,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "linkedin-connector",
-        "timestamp": datetime.utcnow().isoformat(),
-        "nats_connected": nats_client is not None and nats_client.is_connected
+        "version": "3.0.0"
     }
 
 
