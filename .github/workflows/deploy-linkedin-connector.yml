@@ -12,7 +12,7 @@ on:
 
 env:
   PROJECT_ID: thrive-system1
-  REGION: us-central1
+  REGION: me-west1
   SERVICE_NAME: linkedin-connector
   CLOUD_RUN_SERVICE: ingestion-linkedin
 

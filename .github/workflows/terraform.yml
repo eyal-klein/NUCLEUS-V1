@@ -16,7 +16,7 @@ on:
 env:
   TF_VERSION: '1.5.0'
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  REGION: us-central1
+  REGION: me-west1
 
 jobs:
   terraform:
