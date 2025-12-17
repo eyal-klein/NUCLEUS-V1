@@ -60,8 +60,8 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --set-env-vars="PROJECT_ID=${{ env.PROJECT_ID }}" \
-            --set-secrets="DATABASE_URL=nucleus-db-url:latest" \
-            --add-cloudsql-instances=nucleus-master:me-west1:nucleus-db \
+            --set-secrets="DATABASE_URL=nucleus-postgres-url:latest" \
+            --add-cloudsql-instances=nucleus-master:me-west1:nucleus-postgres \
             --cpu=1 \
             --memory=512Mi \
             --min-instances=0 \

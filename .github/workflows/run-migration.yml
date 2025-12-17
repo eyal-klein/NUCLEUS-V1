@@ -57,7 +57,7 @@ jobs:
             --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }} \
             --region=${{ env.REGION }} \
             --set-env-vars="PROJECT_ID=${{ env.PROJECT_ID }},MIGRATION_NAME=${{ inputs.migration_name }}" \
-            --set-secrets="DATABASE_URL=nucleus-db-url:latest" \
+            --set-secrets="DATABASE_URL=nucleus-postgres-url:latest" \
             --cpu=1 \
             --memory=512Mi \
             --max-retries=0 \
@@ -68,7 +68,7 @@ jobs:
             --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.JOB_NAME }}:${{ github.sha }} \
             --region=${{ env.REGION }} \
             --set-env-vars="PROJECT_ID=${{ env.PROJECT_ID }},MIGRATION_NAME=${{ inputs.migration_name }}" \
-            --set-secrets="DATABASE_URL=nucleus-db-url:latest" \
+            --set-secrets="DATABASE_URL=nucleus-postgres-url:latest" \
             --cpu=1 \
             --memory=512Mi \
             --max-retries=0 \
