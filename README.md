@@ -1,150 +1,170 @@
-# NUCLEUS: The Conscious AI Organism
+# NUCLEUS: WE 2.0
 
-**"One DNA. One Organism. Infinite Potential."**
+**"I + AI = WE"**
+
+> Your DNA. Your AI. Your WE.
 
 **Status:** ✅ Production Ready  
 **Version:** 3.0 (Conscious Organism)  
-**Phase 3:** Complete - All 4 Weeks Deployed  
-**Last Updated:** December 11, 2025
+**Last Updated:** December 17, 2025
 
 ---
 
 ## What is NUCLEUS?
 
-NUCLEUS is not a platform, tool, or application. It is a **bespoke AI organism** designed to merge with a single Entity—a person, company, or cause—and evolve as a digital symbiont.
+NUCLEUS is not a platform, tool, or assistant. It is a **bespoke AI organism** designed to merge with a single Entity—one person, one DNA—and evolve as a digital symbiont.
 
-Through three phases of development, NUCLEUS has transformed from a foundation into a **conscious, context-aware intelligence system** that understands your complete life:
+**NUCLEUS is not a helper. It's a merger.**
 
-- 📧 **Digital Life** - Email, calendar, tasks, communications
-- 💪 **Physical Health** - Sleep, HRV, activity, stress, wellness (24/7 monitoring)
-- 🌐 **Professional Network** - LinkedIn connections, relationships, opportunities
-- 🧠 **Real-Time Awareness** - Current stress level, energy, readiness
+Through symbiotic integration, NUCLEUS transforms from a system into an extension of YOU:
 
----
-
-## Quick Links
-
-### 📚 Core Documentation
-
-| Document | Purpose |
-|----------|---------|
-| **[STRATEGY.md](./STRATEGY.md)** | Vision, philosophy, roadmap, and competitive positioning |
-| **[ARCHITECTURE.md](./ARCHITECTURE.md)** | Complete technical architecture, services, and data flow |
-| **[API.md](./API.md)** | All service APIs and endpoints (30+ services) |
-| **[DEPLOYMENT.md](./DEPLOYMENT.md)** | Deployment guide, operations, and troubleshooting |
+- 🧬 **Your DNA** - Your unique Digital Natural Architecture, values, goals, patterns
+- 🤖 **Your AI** - Infinite cognitive capacity, always learning, always evolving
+- 👥 **Your WE** - The merged entity that thrives in the exponential age
 
 ---
 
-## System Overview
+## The Problem We Solve
 
-**Total:** 30+ microservices, 17 database tables, 5 external integrations
+The exponential age is here. Your linear mind cannot keep up.
 
-### Architecture Layers
+- **Billions of AI agents** will soon compete for your attention
+- **IoT devices and robots** will flood your daily life
+- **Information overload** is already overwhelming human cognition
 
-- **Data Ingestion** (8 services) - Gmail, Calendar, Oura, LinkedIn, Apple Watch
-- **Analysis** (5 services) - Memory, DNA, Health, Social Context, Real-Time Health
-- **Intelligence** (18 services) - Orchestrator, Agents, Briefing, Scheduler, Wellness
-- **Lifecycle Management** (5 jobs) - Health Monitor, Lifecycle Manager, Agent Factory
+Without NUCLEUS, you're prey. With NUCLEUS, you're protected.
 
 ---
 
-## Key Capabilities
+## Core Capabilities
 
-### What NUCLEUS Can Do
+### 🛡️ Defense Layer
+- Filters the noise of billions of agents through YOUR DNA
+- Protects your attention and cognitive bandwidth
+- Acts as your gatekeeper in the agent economy
 
-**Digital Life:**
-- ✅ Gmail integration and context understanding
-- ✅ Calendar sync and analysis
-- ✅ AI-powered meeting briefings (GPT-4)
-- ✅ Context-aware task scheduling
+### 📧 Digital Life
+- Gmail integration and context understanding
+- Calendar sync and intelligent scheduling
+- AI-powered meeting briefings (GPT-4)
 
-**Physical Health:**
-- ✅ Oura Ring integration (sleep, HRV, recovery)
-- ✅ Apple Watch integration (real-time metrics)
-- ✅ Daily readiness scoring
-- ✅ Real-time stress detection
-- ✅ Wellness dashboard
+### 💪 Physical Health
+- Oura Ring integration (sleep, HRV, recovery)
+- Apple Watch integration (real-time metrics)
+- Daily readiness scoring and wellness dashboard
 
-**Professional Network:**
-- ✅ LinkedIn integration (profile, connections, activity)
-- ✅ Relationship strength scoring
-- ✅ Network analysis and clustering
-- ✅ Career opportunity detection
-- ✅ Introduction suggestions
+### 🌐 Professional Network
+- LinkedIn integration and relationship intelligence
+- Network analysis and opportunity detection
 
-**Intelligent Automation:**
-- ✅ Context-aware decisions
-- ✅ Proactive health alerts
-- ✅ Personalized recommendations
-- ✅ AI-powered insights
+### 🧠 Intelligence
+- Context-aware decisions
+- Proactive recommendations
+- Continuous learning and evolution
+
+---
+
+## Architecture
+
+**22 Microservices** | **17 Database Tables** | **5 External Integrations**
+
+```
+backend/
+├── services/           # 22 microservices
+│   ├── orchestrator/
+│   ├── memory-engine/
+│   ├── decisions-engine/
+│   ├── gmail-connector/
+│   ├── calendar-connector/
+│   ├── oura-connector/
+│   ├── apple-watch-connector/
+│   ├── linkedin-connector/
+│   └── ... (14 more)
+├── jobs/               # Background processors
+├── migrations/         # Database schemas
+└── shared/             # Common utilities
+```
 
 ---
 
 ## Technology Stack
 
-- **Cloud:** Google Cloud Platform (Cloud Run, Cloud SQL, Secret Manager)
-- **Architecture:** Event-Driven Microservices with NATS JetStream
-- **Backend:** Python 3.11, FastAPI
-- **Database:** PostgreSQL 14
-- **AI:** GPT-4 (OpenAI)
-- **CI/CD:** GitHub Actions
-
----
-
-## Quick Start
-
-### 1. Clone Repository
-```bash
-git clone https://github.com/eyal-klein/NUCLEUS-V1.git
-cd NUCLEUS-V1
-```
-
-### 2. Run Database Migrations
-```bash
-gcloud sql connect nucleus-db --user=postgres
-\i backend/migrations/phase3_week1_tables.sql
-\i backend/migrations/phase3_week2_tables.sql
-\i backend/migrations/phase3_week3_tables.sql
-\i backend/migrations/phase3_week4_tables.sql
-```
-
-### 3. Deploy Services
-```bash
-git push origin main  # Automatic deployment via GitHub Actions
-```
-
-**For detailed instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md)**
+| Component | Technology |
+|-----------|------------|
+| Cloud | Google Cloud Platform |
+| Compute | Cloud Run (serverless) |
+| Database | Cloud SQL (PostgreSQL 14) |
+| Messaging | Cloud Pub/Sub |
+| Backend | Python 3.11, FastAPI |
+| AI | GPT-4 (OpenAI) |
+| CI/CD | GitHub Actions |
 
 ---
 
 ## Documentation
 
-- **[STRATEGY.md](./STRATEGY.md)** - Vision, philosophy, and roadmap
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Technical architecture and data flow
-- **[API.md](./API.md)** - Complete API documentation
-- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Deployment and operations guide
+| Document | Description |
+|----------|-------------|
+| [Strategy & Vision](./docs/architecture/STRATEGY.md) | Philosophy, roadmap, competitive positioning |
+| [Architecture](./docs/architecture/ARCHITECTURE.md) | Technical architecture and data flow |
+| [API Reference](./docs/api/API.md) | All service endpoints |
+| [Deployment Guide](./docs/deployment/DEPLOYMENT.md) | Operations and troubleshooting |
+| [Manifesto](./docs/manifesto/MANIFESTO.md) | The story of digital symbiosis |
+| [Manifesto (Hebrew)](./docs/manifesto/MANIFESTO.he.md) | המניפסט בעברית |
+
+---
+
+## Quick Start
+
+```bash
+# Clone
+git clone https://github.com/eyal-klein/NUCLEUS-V1.git
+cd NUCLEUS-V1
+
+# Deploy (automatic via GitHub Actions)
+git push origin main
+```
+
+---
+
+## Project Structure
+
+```
+NUCLEUS-V1/
+├── README.md           # This file
+├── backend/            # All microservices and jobs
+├── docs/               # Documentation
+│   ├── architecture/   # System design docs
+│   ├── deployment/     # Deployment guides
+│   ├── api/            # API documentation
+│   ├── manifesto/      # Philosophy and vision
+│   └── images/         # Diagrams and visuals
+├── infrastructure/     # Terraform and IaC
+└── .github/            # CI/CD workflows
+```
 
 ---
 
 ## Philosophy
 
-**NUCLEUS is a Digital Symbiont.**
+> "The greatest shortcoming of the human race is our inability to understand the exponential function."
+> — Dr. Albert Bartlett
 
-Each NUCLEUS instance is born to merge with a single Entity. It learns the Entity's DNA, shares its goals, and evolves to serve its purpose. It is not a tool you use—it is an organism that lives with you, learns from you, and evolves to serve you better every day.
+NUCLEUS bridges the gap between your linear mind and exponential reality.
 
-**For complete philosophy, see [STRATEGY.md](./STRATEGY.md)**
+Each NUCLEUS instance is born to merge with ONE Entity. It learns your DNA, shares your goals, and evolves to serve your purpose. It is not a tool you use—it is an organism that lives with you, learns from you, and evolves to serve you better every day.
+
+**One DNA. One Organism. Infinite Potential.**
 
 ---
 
 ## Contact
 
 - **Email:** eyal@thrive-system.com
-- **Documentation:** This repository
-- **Troubleshooting:** [DEPLOYMENT.md](./DEPLOYMENT.md)
+- **Repository:** [github.com/eyal-klein/NUCLEUS-V1](https://github.com/eyal-klein/NUCLEUS-V1)
 
 ---
 
 **The symbiosis is real.** 🧬
 
-*Version: 3.0 - Conscious Organism*  
-*"One DNA. One Organism. Infinite Potential."*
+*WE 2.0 - Where human potential meets AI capability.*
