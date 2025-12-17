@@ -228,3 +228,68 @@ class SchedulingPreferences(Base):
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
     updated_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
     meta_data = Column(JSONB, default={})
+
+
+# ============================================================================
+# Phase 5: Social Network Analysis DNA
+# ============================================================================
+
+class RelationshipScore(Base):
+    """
+    Relationship strength scores between entity and their connections.
+    Calculated by Social Context Engine based on interactions, recency, and mutual factors.
+    """
+    __tablename__ = "relationship_scores"
+    __table_args__ = {"schema": "dna"}
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("dna.entity.id", ondelete="CASCADE"), nullable=False, index=True)
+    connection_id = Column(UUID(as_uuid=True), ForeignKey("memory.linkedin_connections.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    # Score components (0-1 scale)
+    overall_score = Column(Float, nullable=False, comment="Weighted average of all component scores")
+    interaction_score = Column(Float, default=0.0, comment="Based on frequency of interactions")
+    recency_score = Column(Float, default=0.0, comment="Based on how recent the last interaction was")
+    mutual_connections_score = Column(Float, default=0.0, comment="Based on shared connections")
+    shared_experience_score = Column(Float, default=0.0, comment="Based on shared companies/schools")
+    sentiment_score = Column(Float, default=0.0, comment="Based on sentiment of interactions")
+    
+    # Timestamps
+    calculated_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Metadata
+    meta_data = Column(JSONB, default={})
+
+
+class NetworkInsights(Base):
+    """
+    Network analysis insights for entity.
+    Aggregated insights about the entity's professional network.
+    """
+    __tablename__ = "network_insights"
+    __table_args__ = {"schema": "dna"}
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("dna.entity.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    # Network metrics
+    total_connections = Column(Integer, default=0)
+    network_growth_rate = Column(Float, default=0.0, comment="Monthly growth rate")
+    
+    # Cluster analysis (JSONB for flexibility)
+    company_clusters = Column(JSONB, default={}, comment="Distribution of connections by company")
+    industry_clusters = Column(JSONB, default={}, comment="Distribution of connections by industry")
+    location_clusters = Column(JSONB, default={}, comment="Distribution of connections by location")
+    
+    # Top connectors
+    top_connectors = Column(JSONB, default=[], comment="List of top connections by score")
+    
+    # Analysis date
+    analysis_date = Column(Date, nullable=False, index=True)
+    
+    # Timestamps
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    
+    # Metadata
+    meta_data = Column(JSONB, default={})

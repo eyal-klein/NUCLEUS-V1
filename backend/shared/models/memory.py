@@ -292,3 +292,127 @@ class Briefing(Base):
     
     # Metadata
     meta_data = Column(JSONB, default={})
+
+
+# ============================================================================
+# Phase 5: LinkedIn Social Network Data
+# ============================================================================
+
+class LinkedInProfile(Base):
+    """
+    LinkedIn profile data for entity.
+    Stores the entity's own LinkedIn profile information.
+    """
+    __tablename__ = "linkedin_profiles"
+    __table_args__ = {"schema": "memory"}
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("dna.entity.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    # LinkedIn identifiers
+    linkedin_id = Column(String(255), unique=True, nullable=False)
+    profile_url = Column(String(500), nullable=True)
+    
+    # Basic info
+    first_name = Column(String(255), nullable=True)
+    last_name = Column(String(255), nullable=True)
+    headline = Column(String(500), nullable=True)
+    summary = Column(Text, nullable=True)
+    
+    # Professional info
+    current_company = Column(String(255), nullable=True)
+    current_position = Column(String(255), nullable=True)
+    industry = Column(String(255), nullable=True)
+    location = Column(String(255), nullable=True)
+    
+    # Experience and education (JSONB for flexibility)
+    experience = Column(JSONB, default=[], comment="List of work experiences")
+    education = Column(JSONB, default=[], comment="List of education entries")
+    skills = Column(JSONB, default=[], comment="List of skills")
+    
+    # Network stats
+    connections_count = Column(Integer, nullable=True)
+    
+    # Timestamps
+    last_synced_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Metadata
+    meta_data = Column(JSONB, default={})
+
+
+class LinkedInConnection(Base):
+    """
+    LinkedIn connections for entity.
+    Stores information about people connected to the entity on LinkedIn.
+    """
+    __tablename__ = "linkedin_connections"
+    __table_args__ = {"schema": "memory"}
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("dna.entity.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    # Connection identifiers
+    connection_linkedin_id = Column(String(255), nullable=False, index=True)
+    profile_url = Column(String(500), nullable=True)
+    
+    # Basic info
+    first_name = Column(String(255), nullable=True)
+    last_name = Column(String(255), nullable=True)
+    headline = Column(String(500), nullable=True)
+    
+    # Professional info
+    current_company = Column(String(255), nullable=True, index=True)
+    current_position = Column(String(255), nullable=True)
+    industry = Column(String(255), nullable=True)
+    location = Column(String(255), nullable=True, index=True)
+    
+    # Connection metadata
+    connected_at = Column(TIMESTAMP(timezone=True), nullable=True, index=True)
+    connection_degree = Column(Integer, default=1, comment="1st, 2nd, 3rd degree connection")
+    
+    # Timestamps
+    last_synced_at = Column(TIMESTAMP(timezone=True), nullable=True)
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    updated_at = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
+    
+    # Metadata
+    meta_data = Column(JSONB, default={})
+
+
+class LinkedInActivity(Base):
+    """
+    LinkedIn activities and interactions.
+    Stores posts, comments, likes, and other activities from connections.
+    """
+    __tablename__ = "linkedin_activities"
+    __table_args__ = {"schema": "memory"}
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    entity_id = Column(UUID(as_uuid=True), ForeignKey("dna.entity.id", ondelete="CASCADE"), nullable=False, index=True)
+    
+    # Activity identifiers
+    activity_id = Column(String(255), nullable=True, unique=True)
+    author_linkedin_id = Column(String(255), nullable=False, index=True)
+    
+    # Activity type
+    activity_type = Column(String(50), nullable=False)  # post, comment, like, share, article
+    
+    # Content
+    content = Column(Text, nullable=True)
+    url = Column(String(500), nullable=True)
+    
+    # Engagement metrics
+    likes_count = Column(Integer, default=0)
+    comments_count = Column(Integer, default=0)
+    shares_count = Column(Integer, default=0)
+    
+    # Temporal
+    posted_at = Column(TIMESTAMP(timezone=True), nullable=False, index=True)
+    
+    # Timestamps
+    created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    
+    # Metadata
+    meta_data = Column(JSONB, default={})
