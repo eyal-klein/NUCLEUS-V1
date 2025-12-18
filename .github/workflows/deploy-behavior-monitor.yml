@@ -30,7 +30,7 @@ jobs:
           project_id: ${{ env.PROJECT_ID }}
       - run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
       - run: |
-          docker build -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}             -f backend/services/behavior-monitor/Dockerfile .
+          docker build -t me-west1-docker.pkg.dev/nucleus-master/nucleus-repo/behavior-monitor:${{ github.sha }} -f backend/services/behavior-monitor/Dockerfile ./Dockerfile .
           docker push ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}
       - run: |
-          gcloud run deploy ${{ env.SERVICE_NAME }}             --image ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/${{ env.SERVICE_NAME }}:${{ github.sha }}             --region ${{ env.REGION }}             --platform managed             --allow-unauthenticated             --service-account nucleus-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com             --add-cloudsql-instances ${{ env.PROJECT_ID }}:${{ env.REGION }}:nucleus-postgres             --set-env-vars "GCP_PROJECT_ID=${{ env.PROJECT_ID }}"             --set-secrets "DATABASE_URL=DATABASE_URL:latest,GEMINI_API_KEY=GEMINI_API_KEY:latest"             --memory 512Mi --cpu 1 --min-instances 0 --max-instances 10
+          gcloud run deploy ${{ env.SERVICE_NAME }}             --image me-west1-docker.pkg.dev/nucleus-master/nucleus-repo/behavior-monitor:${{ github.sha }}"             --memory 512Mi --cpu 1 --min-instances 0 --max-instances 10

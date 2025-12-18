@@ -28,13 +28,13 @@ jobs:
 
       - name: Build and Push
         run: |
-          docker build -t me-west1-docker.pkg.dev/nucleus-master/nucleus-repo/relationship-builder:latest backend/services/relationship-builder
-          docker push me-west1-docker.pkg.dev/nucleus-master/nucleus-repo/relationship-builder:latest
+          docker build -t me-west1-docker.pkg.dev/nucleus-master/nucleus-repo/relationship-builder:${{ github.sha }} -f backend/services/relationship-builder/Dockerfile .
+          docker push me-west1-docker.pkg.dev/nucleus-master/nucleus-repo/relationship-builder:${{ github.sha }}
 
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy relationship-builder \
-            --image me-west1-docker.pkg.dev/nucleus-master/nucleus-repo/relationship-builder:latest \
+            --image me-west1-docker.pkg.dev/nucleus-master/nucleus-repo/relationship-builder:${{ github.sha }} \
             --region me-west1 \
             --platform managed \
             --service-account nucleus-sa@nucleus-master.iam.gserviceaccount.com \
