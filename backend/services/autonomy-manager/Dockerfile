@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy shared modules first
 COPY backend/shared /app/shared
 
-# Copy service requirements and install
+# Copy requirements and install
 COPY backend/services/autonomy-manager/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -19,7 +19,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/services/autonomy-manager/main.py .
 
 # Set Python path for shared modules
-ENV PYTHONPATH=/app:/app/shared
+ENV PYTHONPATH=/app
 
 # Run the service
 CMD ["python", "main.py"]
