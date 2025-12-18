@@ -1,4 +1,4 @@
-"""NUCLEUS V1.2 - SQLAlchemy Models"""
+"""NUCLEUS V2.0 - SQLAlchemy Models"""
 
 from .base import Base, get_db, init_db, engine, SessionLocal
 from .dna import Entity, Interest, Goal, Value, RawData, DailyReadiness, EnergyPattern, SchedulingPreferences
@@ -15,6 +15,28 @@ from .memory import (
 from .assembly import Agent, Tool, AgentTool, AgentPerformance, AgentNeed, AgentLifecycleEvent
 from .execution import Task, Job, Log
 from .integrations import EntityIntegration
+from .nucleus_core import (
+    # Proactive Engagement
+    ProactiveTrigger, ProactiveInitiative,
+    # Interest Discovery
+    InterestSignal, InterestCandidate,
+    # Self-Evolution
+    EvolutionFeedback, EvolutionCycle,
+    # Autonomy Management
+    AutonomyLevel, AutonomyTransition,
+    # Core Principles
+    CorePrinciple, PrincipleViolation,
+    # Behavior Monitoring
+    BehaviorLog, BehaviorDrift,
+    # Domain Management
+    Domain, DomainKnowledge,
+    # Relationship Building
+    PrivateLanguage,
+    # Agent Testbed
+    TestScenario, TestResult,
+    # Wellbeing Guardian
+    WellbeingCheck,
+)
 
 __all__ = [
     # Base
@@ -72,4 +94,32 @@ __all__ = [
     "Log",
     # Integrations
     "EntityIntegration",
+    # Nucleus Core - Proactive Engagement
+    "ProactiveTrigger",
+    "ProactiveInitiative",
+    # Nucleus Core - Interest Discovery
+    "InterestSignal",
+    "InterestCandidate",
+    # Nucleus Core - Self-Evolution
+    "EvolutionFeedback",
+    "EvolutionCycle",
+    # Nucleus Core - Autonomy Management
+    "AutonomyLevel",
+    "AutonomyTransition",
+    # Nucleus Core - Core Principles
+    "CorePrinciple",
+    "PrincipleViolation",
+    # Nucleus Core - Behavior Monitoring
+    "BehaviorLog",
+    "BehaviorDrift",
+    # Nucleus Core - Domain Management
+    "Domain",
+    "DomainKnowledge",
+    # Nucleus Core - Relationship Building
+    "PrivateLanguage",
+    # Nucleus Core - Agent Testbed
+    "TestScenario",
+    "TestResult",
+    # Nucleus Core - Wellbeing Guardian
+    "WellbeingCheck",
 ]
