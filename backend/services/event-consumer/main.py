@@ -27,7 +27,11 @@ app = FastAPI(
 # Configuration
 MEMORY_ENGINE_URL = os.getenv("MEMORY_ENGINE_URL", "http://analysis-memory:8080")
 DNA_ENGINE_URL = os.getenv("DNA_ENGINE_URL", "http://analysis-dna:8080")
-GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "thrive-system1")
+GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
+
+if not GCP_PROJECT_ID:
+
+    raise ValueError("GCP_PROJECT_ID environment variable is required for proper GCP project isolation")
 
 # HTTP client for downstream services
 http_client = httpx.AsyncClient(timeout=30.0)

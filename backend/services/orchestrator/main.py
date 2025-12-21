@@ -37,7 +37,11 @@ app.include_router(integrations.router)
 app.include_router(metrics.router)
 
 # Initialize Pub/Sub client
-project_id = os.getenv("PROJECT_ID", "thrive-system1")
+project_id = os.getenv("PROJECT_ID")
+
+if not project_id:
+
+    raise ValueError("PROJECT_ID environment variable is required for proper GCP project isolation")
 pubsub = get_pubsub_client(project_id)
 
 # Initialize Memory Logger

@@ -16,6 +16,9 @@ from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from fastapi.responses import RedirectResponse, JSONResponse
 from pydantic import BaseModel, Field
 import httpx
+import sys
+sys.path.append('/home/ubuntu/NUCLEUS-V1/backend')
+from shared.utils.credentials_manager import CredentialsManager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -25,7 +28,11 @@ logger = logging.getLogger(__name__)
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 REDIRECT_URI = os.getenv("REDIRECT_URI", "http://localhost:8000/callback")
-GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "thrive-system1")
+GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
+
+if not GCP_PROJECT_ID:
+
+    raise ValueError("GCP_PROJECT_ID environment variable is required for proper GCP project isolation")
 PUBSUB_TOPIC = os.getenv("PUBSUB_TOPIC", "nucleus-digital-events")
 
 # OAuth scopes
@@ -41,8 +48,8 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# In-memory credentials store (TODO: persist to database)
-credentials_store: Dict[str, Dict[str, Any]] = {}
+# Credentials manager for persistent storage
+credentials_manager = CredentialsManager()
 
 # Pub/Sub publisher (lazy initialization)
 publisher = None
@@ -162,8 +169,8 @@ async def oauth_callback(code: str, state: str):
         flow.fetch_token(code=code)
         credentials = flow.credentials
         
-        # Store credentials
-        credentials_store[entity_id] = {
+        # Store credentials persistently
+        credentials_dict = {
             "token": credentials.token,
             "refresh_token": credentials.refresh_token,
             "token_uri": credentials.token_uri,
@@ -171,6 +178,12 @@ async def oauth_callback(code: str, state: str):
             "client_secret": credentials.client_secret,
             "scopes": list(credentials.scopes) if credentials.scopes else SCOPES
         }
+        credentials_manager.store_credentials(
+            entity_id=entity_id,
+            service_name="google_calendar",
+            credentials=credentials_dict
+        )
+        logger.info(f"Stored credentials for entity {entity_id}")
         
         return JSONResponse(content={
             "message": "Successfully authenticated with Google Calendar",
@@ -187,7 +200,13 @@ async def sync_calendar(request: SyncRequest, background_tasks: BackgroundTasks)
     """Manually trigger calendar sync"""
     entity_id = request.entity_id
     
-    if entity_id not in credentials_store:
+    try:
+        credentials_manager.retrieve_credentials(
+            entity_id=entity_id,
+            service_name="google_calendar"
+        )
+    except Exception as e:
+        logger.error(f"Failed to retrieve credentials: {str(e)}")
         raise HTTPException(status_code=401, detail=f"No credentials found for entity {entity_id}")
     
     # Run sync in background
@@ -211,9 +230,13 @@ async def sync_calendar_events(entity_id: str, days_past: int = 7, days_future: 
     from googleapiclient.discovery import build
     from googleapiclient.errors import HttpError
     
-    token_data = credentials_store.get(entity_id)
-    if not token_data:
-        logger.error(f"No credentials found for entity {entity_id}")
+    try:
+        token_data = credentials_manager.retrieve_credentials(
+            entity_id=entity_id,
+            service_name="google_calendar"
+        )
+    except Exception as e:
+        logger.error(f"No credentials found for entity {entity_id}: {str(e)}")
         return []
     
     credentials = Credentials(

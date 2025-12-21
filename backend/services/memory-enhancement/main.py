@@ -397,7 +397,8 @@ Return JSON:
             result = json.loads(response.strip().replace("```json", "").replace("```", ""))
             return result.get("issues", [])
             
-        except:
+        except Exception as e:
+            logger.error(f"Error checking coherence: {str(e)}", exc_info=True)
             return []
     
     def _generate_recommendations(self, issues: List[Dict[str, Any]]) -> List[str]:

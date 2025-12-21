@@ -35,7 +35,9 @@ app = FastAPI(
 EVENT_STREAM_URL = os.getenv("EVENT_STREAM_URL", "http://event-stream:8080")
 SYNC_INTERVAL_MINUTES = int(os.getenv("SYNC_INTERVAL_MINUTES", "5"))
 # Pub/Sub Configuration
-GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "thrive-system1")
+GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID")
+if not GCP_PROJECT_ID:
+    raise ValueError("GCP_PROJECT_ID environment variable is required for proper GCP project isolation")
 PUBSUB_TOPIC = os.getenv("PUBSUB_TOPIC", "nucleus-digital-events")
 
 
@@ -194,7 +196,7 @@ class GmailConnector:
                 future = publisher.publish(
                     topic_path,
                     data=message_data,
-                    event_type=event["event_type"],
+                    event_type=event["type"],
                     entity_id=event["entity_id"]
                 )
                 message_id = future.result(timeout=30)

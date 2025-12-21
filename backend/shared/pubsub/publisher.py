@@ -14,7 +14,11 @@ from google.api_core import retry
 logger = logging.getLogger(__name__)
 
 # Configuration
-PROJECT_ID = os.getenv("GCP_PROJECT_ID", "thrive-system1")
+PROJECT_ID = os.getenv("GCP_PROJECT_ID")
+
+if not PROJECT_ID:
+
+    raise ValueError("GCP_PROJECT_ID environment variable is required for proper GCP project isolation")
 
 # Topic names
 TOPICS = {

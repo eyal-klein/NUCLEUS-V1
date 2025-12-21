@@ -296,7 +296,8 @@ Just provide the summary, no explanation."""
                 {"role": "user", "content": prompt}
             ])
             return response.strip()
-        except:
+        except Exception as e:
+            logger.error(f"Error creating experience summary: {str(e)}", exc_info=True)
             return description[:100]
 
 
@@ -412,7 +413,8 @@ Just provide the adapted message, no explanation."""
                 {"role": "user", "content": prompt}
             ])
             return response.strip()
-        except:
+        except Exception as e:
+            logger.error(f"Error adapting message: {str(e)}", exc_info=True)
             return message
 
 
