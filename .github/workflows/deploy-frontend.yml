@@ -5,7 +5,9 @@ on:
     branches:
       - main
     paths:
-      - 'frontend/**'
+      - 'client/**'
+      - 'package.json'
+      - 'Dockerfile'
       - '.github/workflows/deploy-frontend.yml'
   workflow_dispatch:
 
@@ -41,10 +43,10 @@ jobs:
       
       - name: Build Docker image
         run: |
-          docker build --no-cache -f frontend/Dockerfile \
+          docker build --no-cache -f Dockerfile \
             -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:${{ github.sha }} \
             -t ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/nucleus/${{ env.SERVICE_NAME }}:latest \
-            frontend/
+            .
       
       - name: Push Docker image
         run: |
