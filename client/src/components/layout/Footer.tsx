@@ -12,7 +12,7 @@ export function Footer() {
           {/* Brand Column */}
           <div className="text-center md:text-left space-y-6">
             <img 
-              src="/images/nucleus_logo_on_dark.png" 
+              src="/images/nucleus_logo_final_clean.png" 
               alt="NUCLEUS" 
               className="h-16 w-auto mx-auto md:mx-0 opacity-80 grayscale hover:grayscale-0 transition-all duration-700"
             />

@@ -26,7 +26,7 @@ export function Header() {
         <Link href="/">
           <a className="relative group block">
             <img 
-              src="/images/nucleus_logo_on_dark.png" 
+              src="/images/nucleus_logo_final_clean.png" 
               alt="NUCLEUS" 
               className="h-10 md:h-12 w-auto object-contain transition-all duration-500 opacity-90 group-hover:opacity-100 group-hover:drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]"
             />
