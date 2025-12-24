@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "wouter";
-import { NucleusLogo } from "@/components/ui/NucleusLogo";
+
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -23,10 +23,14 @@ export function Header() {
       transition={{ duration: 0.8, ease: "easeOut" }}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        {/* Logo - SVG Component */}
+        {/* Logo - Original Brand Asset (Transparent) */}
         <Link href="/">
           <a className="relative group block">
-            <NucleusLogo className="transition-all duration-500 opacity-90 group-hover:opacity-100 group-hover:drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]" />
+            <img 
+              src="/images/nucleus_logo_transparent.png" 
+              alt="NUCLEUS" 
+              className="h-10 md:h-12 w-auto object-contain transition-all duration-500 opacity-90 group-hover:opacity-100 group-hover:drop-shadow-[0_0_15px_rgba(212,175,55,0.3)]"
+            />
           </a>
         </Link>
 
